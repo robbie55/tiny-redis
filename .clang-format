@@ -1,0 +1,42 @@
+---
+Language:        Cpp
+BasedOnStyle:    Google
+Standard:        c++20
+
+NamespaceIndentation: All
+
+DerivePointerAlignment: false
+PointerAlignment: Left
+
+IndentWidth:     2
+TabWidth:        2
+UseTab:          Never
+
+ColumnLimit:     100
+
+SortIncludes:    true
+
+AlignAfterOpenBracket: Align
+# Disabled: aligning these creates churn in diffs when variables are added or renamed.
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: Left
+AlignOperands:   Align
+AlignTrailingComments: true
+
+BreakBeforeBraces: Attach
+
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+BinPackArguments: true
+BinPackParameters: true
+
+AlwaysBreakTemplateDeclarations: Yes
+
+IndentCaseLabels: true
+
+FixNamespaceComments: true
+
+IndentRequiresClause: true
+BreakBeforeConceptDeclarations: true
+...

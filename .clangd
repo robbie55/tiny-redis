@@ -1,0 +1,34 @@
+CompileFlags:
+    CompilationDatabase: "build/debug"
+
+# .clang-tidy stays authoritative, WarningsAsErrors:'*' and all — that is the CI contract.
+# This file only changes what the EDITOR surfaces, which is option (2) in the
+# "Editor-vs-CI tension" note in .clang-tidy.
+Diagnostics:
+  ClangTidy:
+    # SCAFFOLD-ONLY. Every check below fires because the bodies in src/ are currently
+    # `unimplemented()` stubs, not because anything is wrong with the design:
+    #   - a stub never touches `this`, so all 52 methods "could be static"
+    #   - a stub destructor "could be defaulted"
+    #   - a stub constructor initializes no members
+    # All three are checks worth keeping. Delete this Remove: block once src/ is
+    # implemented, and let them run for real.
+    Remove:
+      - readability-convert-member-functions-to-static
+      - performance-trivially-destructible
+      - cppcoreguidelines-pro-type-member-init
+
+---
+# epoll does not exist on macOS, so src/net and main.cpp cannot be analyzed on this host.
+# <sys/epoll.h> fails, clang then skips the rest of the file's includes, core/todo.h never
+# loads, and `unimplemented` reads as undeclared everywhere it is called. That is one root
+# cause presenting as 11 errors.
+#
+# Scoped to these paths deliberately: a genuine typo in an include anywhere else still
+# shows up as an error. The real fix for src/net is to edit it on the Linux box.
+If:
+  PathMatch: [src/net/.*, src/main\.cpp]
+Diagnostics:
+  Suppress:
+    - pp_file_not_found
+    - ovl_no_viable_function_in_call

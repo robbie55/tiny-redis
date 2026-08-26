@@ -1,0 +1,199 @@
+
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -misc-non-private-member-variables-in-classes,
+  -misc-no-recursion,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -readability-magic-numbers
+
+# Why these are ENABLED:
+#   bugprone-*           — likely-bug patterns (uninit, narrowing, dangling). Cheap, accurate.
+#   clang-analyzer-*     — full data-flow static analysis. Catches things lints can't (e.g.
+#                          use-after-free across branches). Distinct from the rest.
+#   concurrency-*        — won't fire much on a single-threaded event loop, but free insurance.
+#   cppcoreguidelines-*  — Bjarne/Herb's rules. Opinionated and educational — exactly what
+#                          you want as a C++ learner. Several pro-* sub-checks are too strict
+#                          for systems code; see disables below.
+#   misc-*               — grab bag, includes useful ones like misc-include-cleaner and
+#                          misc-const-correctness.
+#   modernize-*          — pushes toward modern idioms (smart pointers, ranged-for, override,
+#                          using-aliases over typedefs). Highly educational.
+#   performance-*        — copy/move/string smells. Cheap signal.
+#   portability-*        — Linux + macOS targets means this matters; flags
+#                          implementation-defined behaviour.
+#   readability-*        — clarity rules. Some overlap with clang-format (which handles
+#                          whitespace); these handle structure (long functions, deep nesting,
+#                          implicit bool conversions).
+#
+# Why these are DISABLED:
+#   bugprone-easily-swappable-parameters
+#       Fires on every function with two same-typed parameters: f(int x, int y), f(int w,
+#       int h). Honest TUI / coordinate code is full of these. Too noisy, low yield.
+#   cppcoreguidelines-avoid-magic-numbers / readability-magic-numbers
+#       Fires on EVERY integer literal that isn't 0 or 1. In TUI code (column counts, key
+#       codes, terminal escape sequences) this is unbearable. Re-enable later when you have
+#       a better sense of where named constants actually help.
+#   cppcoreguidelines-non-private-member-variables-in-classes /
+#   misc-non-private-member-variables-in-classes
+#       Both forbid public/protected data members. But `struct` is a legitimate C++ tool for
+#       passive-data aggregates (POD types, MI-protocol record structs). The duplicate also
+#       means double diagnostics if both stay on.
+#   cppcoreguidelines-pro-bounds-array-to-pointer-decay
+#       Fires on `assert(x)` and a bunch of legitimate C-string interop. Known false-positive
+#       generator. The Core Guidelines themselves admit this rule is impractical without
+#       gsl::span everywhere — and we're not pulling in GSL.
+#   cppcoreguidelines-pro-bounds-pointer-arithmetic
+#       Same problem: any C-string or buffer code lights up. Reach for std::span where it
+#       fits, but don't have the linter scream at every char* loop.
+#   cppcoreguidelines-pro-type-reinterpret-cast
+#       A pool allocator IS the reinterpret_cast use case: raw storage from ::operator new
+#       is reinterpreted as a free-list Node while free and as a T while in use. There is no
+#       static_cast spelling of that, so the check would fire on every line that matters.
+#   misc-no-recursion
+#       Recursion is a normal tool. AST walks, MI-record parsing, tree rendering — all
+#       naturally recursive. The check is over-broad.
+#   modernize-use-trailing-return-type
+#       `auto f() -> int` over `int f()`. Genuinely controversial; many seniors find it
+#       harder to scan. Leave off unless you decide you like it.
+#   readability-identifier-length
+#       Forbids 1-character names. `for (int i = 0; ...)` is fine. Loop indices and short
+#       lambda params don't need to be `index_counter`.
+
+# WarningsAsErrors
+# ----------------
+# '*' promotes every enabled diagnostic to an error. This is the strict choice: no warning
+# rot. The cost: any clang-tidy hit becomes a hard fail.
+#
+# Editor-vs-CI tension: if you wire this into CMAKE_CXX_CLANG_TIDY, every build fails on
+# any warning, which is great for discipline but painful while iterating. Two ways out:
+#   (1) Run clang-tidy only in CI / pre-commit (recommended for now).
+#   (2) Keep WarningsAsErrors='*' here for CI, and run editor-time tidy through clangd's
+#       --tidy-checks flag separately (clangd surfaces them as squiggles, not failures).
+WarningsAsErrors: '*'
+
+# HeaderFilterRegex
+# -----------------
+# clang-tidy lints every translation unit's headers it sees — INCLUDING system, vendored,
+# and FetchContent'ed library headers. Without a filter, you'd be linting libstdc++ and
+# ftxui's source. This regex restricts header diagnostics to files inside this project.
+#
+# How: clang-tidy applies the regex to the absolute path of each header. Negative
+# lookahead (?!...) excludes anything whose path contains a build/ component. The trailing
+# extension match limits to C/C++ header extensions.
+#
+# Adjust if you reorganise into src/ + include/ — at that point you can tighten this to
+# `.*debug-plus/(src|include|tests)/.*\.(h|hpp)$` for an even narrower allowlist.
+HeaderFilterRegex: '.*debug-plus/(?!build/).*\.(h|hh|hpp|hxx)$'
+
+# FormatStyle
+# -----------
+# Lets clang-tidy auto-fixes use your .clang-format style instead of LLVM defaults. Means
+# `clang-tidy --fix` produces patches that match the rest of your code.
+FormatStyle: file
+
+# CheckOptions
+# ------------
+# Per-check tuning. The big ones:
+#   - readability-identifier-naming enforces a naming scheme. Mostly Google's C++ style
+#     (consistent with BasedOnStyle: Google in .clang-format), but all variables —
+#     locals, parameters and data members — deliberately use camelCase for this project:
+#       * Types (class/struct/enum/alias):  CamelCase
+#       * Functions / methods:              CamelCase  (Google convention; flip to camelBack
+#                                                       if you'd rather)
+#       * Variables / parameters:           camelBack     (project preference, not Google)
+#       * Data members:                     camelBack
+#       * Private/protected members:        camelBack_    (trailing underscore)
+#       * Constants and constexpr:          kCamelCase
+#       * Enum constants:                   kCamelCase
+#       * Namespaces:                       lower_case
+#       * Macros:                           UPPER_CASE
+#       * Template parameters:              CamelCase
+#
+#   - readability-function-size and readability-function-cognitive-complexity bound how
+#     gnarly a single function is allowed to be. Defaults are too lenient; the values below
+#     are strict-but-shippable.
+#
+#   - modernize-use-auto.MinTypeNameLength=5 keeps `int i = 0` from being rewritten to
+#     `auto i = 0` while still pushing for `auto` on long iterator/template types.
+CheckOptions:
+  # ---- Naming ----
+  - { key: readability-identifier-naming.ClassCase,                value: CamelCase }
+  - { key: readability-identifier-naming.StructCase,               value: CamelCase }
+  - { key: readability-identifier-naming.EnumCase,                 value: CamelCase }
+  - { key: readability-identifier-naming.UnionCase,                value: CamelCase }
+  - { key: readability-identifier-naming.TypeAliasCase,            value: CamelCase }
+  - { key: readability-identifier-naming.TypedefCase,              value: CamelCase }
+  - { key: readability-identifier-naming.TemplateParameterCase,    value: CamelCase }
+
+  - { key: readability-identifier-naming.FunctionCase,             value: camelBack}
+  - { key: readability-identifier-naming.MethodCase,               value: camelBack}
+
+  - { key: readability-identifier-naming.VariableCase,             value: camelBack }
+  - { key: readability-identifier-naming.ParameterCase,            value: camelBack }
+  - { key: readability-identifier-naming.LocalVariableCase,        value: camelBack }
+
+  - { key: readability-identifier-naming.MemberCase,               value: camelBack }
+  - { key: readability-identifier-naming.ClassMemberCase,          value: camelBack }
+  - { key: readability-identifier-naming.PrivateMemberCase,        value: camelBack }
+  - { key: readability-identifier-naming.PrivateMemberSuffix,      value: '_' }
+  - { key: readability-identifier-naming.ProtectedMemberCase,      value: camelBack }
+  - { key: readability-identifier-naming.ProtectedMemberSuffix,    value: '_' }
+  - { key: readability-identifier-naming.PublicMemberCase,         value: camelBack }
+
+  - { key: readability-identifier-naming.ConstexprVariableCase,    value: CamelCase }
+  - { key: readability-identifier-naming.ConstexprVariablePrefix,  value: 'k' }
+  - { key: readability-identifier-naming.GlobalConstantCase,       value: CamelCase }
+  - { key: readability-identifier-naming.GlobalConstantPrefix,     value: 'k' }
+  - { key: readability-identifier-naming.StaticConstantCase,       value: CamelCase }
+  - { key: readability-identifier-naming.StaticConstantPrefix,     value: 'k' }
+  - { key: readability-identifier-naming.EnumConstantCase,         value: CamelCase }
+  - { key: readability-identifier-naming.EnumConstantPrefix,       value: 'k' }
+
+  - { key: readability-identifier-naming.NamespaceCase,            value: lower_case }
+  - { key: readability-identifier-naming.MacroDefinitionCase,      value: UPPER_CASE }
+
+  # ---- Complexity bounds ----
+  # Cognitive complexity = a structured measure of how hard a function is to follow.
+  # Default 25 is generous; 20 forces splitting genuinely tangled functions.
+  - { key: readability-function-cognitive-complexity.Threshold,    value: '20' }
+
+  # Function-size thresholds. Each threshold can fire independently.
+  - { key: readability-function-size.LineThreshold,                value: '80' }
+  - { key: readability-function-size.StatementThreshold,           value: '50' }
+  - { key: readability-function-size.BranchThreshold,              value: '10' }
+  - { key: readability-function-size.ParameterThreshold,           value: '5' }
+  - { key: readability-function-size.NestingThreshold,             value: '4' }
+  - { key: readability-function-size.VariableThreshold,            value: '15' }
+
+  # ---- modernize tuning ----
+  # Don't rewrite `int i = 0` to `auto i = 0` — auto only earns its keep on longer types.
+  - { key: modernize-use-auto.MinTypeNameLength,                   value: '5' }
+  # Prefer `= default` and `= delete` over hand-written empty bodies.
+  - { key: modernize-use-equals-default.IgnoreMacros,              value: 'true' }
+
+  # ---- bugprone tuning ----
+  # Let assertions side-effect freely (assert(read(fd, buf, n) == n)). Matters for tests.
+  - { key: bugprone-assert-side-effect.AssertMacros,
+      value: 'assert,NSAssert,NSCAssert' }
+
+  # ---- readability tuning ----
+  # Forbid implicit int-to-bool: `if (n)` becomes `if (n != 0)`. Catches a real category
+  # of bugs (forgetting to compare).
+  - { key: readability-implicit-bool-conversion.AllowIntegerConditions, value: 'false' }
+  - { key: readability-implicit-bool-conversion.AllowPointerConditions, value: 'false' }
