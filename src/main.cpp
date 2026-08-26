@@ -10,8 +10,10 @@ namespace {
 
   tinyredis::Server* gServer{nullptr};
 
-  void onSignal(int) {
-    if (gServer != nullptr) gServer->stop();
+  void onSignal(int /*sig*/) {
+    if (gServer != nullptr) {
+      gServer->stop();
+    }
   }
 
   void usage() {

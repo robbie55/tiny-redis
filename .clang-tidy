@@ -98,8 +98,8 @@ WarningsAsErrors: '*'
 # extension match limits to C/C++ header extensions.
 #
 # Adjust if you reorganise into src/ + include/ — at that point you can tighten this to
-# `.*debug-plus/(src|include|tests)/.*\.(h|hpp)$` for an even narrower allowlist.
-HeaderFilterRegex: '.*debug-plus/(?!build/).*\.(h|hh|hpp|hxx)$'
+# `.*tiny-redis/(src|tests)/.*\.(h|hpp)$` for an even narrower allowlist.
+HeaderFilterRegex: '.*tiny-redis/(?!build/).*\.(h|hh|hpp|hxx)$'
 
 # FormatStyle
 # -----------
