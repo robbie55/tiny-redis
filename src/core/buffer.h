@@ -8,14 +8,12 @@ namespace tinyredis {
 
   // A growable byte buffer with separate read and write cursors. Every connection owns
   // two: one filled by read(2), one drained by write(2).
-  //
-  // TODO(robbie): two decisions live in here, and both show up in the benchmark.
-  //   1. Why a read cursor at all, rather than erasing from the front?
-  //   2. ensureWritable() can reclaim the already-consumed prefix or reallocate.
-  //      When should it do which?
   class Buffer {
+   private:
+    void compact() noexcept;
+
    public:
-    static constexpr std::size_t kDefaultCapacity{static_cast<std::size_t>(16 * 1024)};
+    static constexpr auto kDefaultCapacity{static_cast<std::size_t>(16 * 1024)};
 
     explicit Buffer(std::size_t initialCapacity = kDefaultCapacity);
 
@@ -30,7 +28,7 @@ namespace tinyredis {
     char* writePtr() noexcept;
     [[nodiscard]] std::size_t writableBytes() const noexcept;
 
-    // Postcondition: writableBytes() >= n.
+    // ensureWritable invalidates every outstanding writePtr() and readable()
     void ensureWritable(std::size_t n);
 
     // Publishes n bytes written at writePtr().
@@ -45,6 +43,9 @@ namespace tinyredis {
 
    private:
     // TODO(robbie): your storage and cursors go here.
+    std::vector<char> buf_;
+    std::size_t readIdx_{};
+    std::size_t writeIdx_{};
   };
 
 }  // namespace tinyredis
