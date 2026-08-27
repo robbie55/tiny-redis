@@ -23,7 +23,7 @@ namespace {
 
   TEST(Buffer, AppendAndRead) {
     tinyredis::Buffer buf{kInitialSize};
-    constexpr std::string kRead{"Hello World"};
+    const std::string kRead{"Hello World"};
     buf.append(kRead);
 
     auto readable{buf.readable()};
@@ -35,7 +35,7 @@ namespace {
 
   TEST(Buffer, ConsumePartialThenRest) {
     tinyredis::Buffer buf{kInitialSize};
-    constexpr std::string kRead{"Hello World"};
+    const std::string kRead{"Hello World"};
     buf.append(kRead);
 
     constexpr std::size_t kPrefix{7};

@@ -38,7 +38,7 @@ namespace tinyredis {
     void markClosed();
     void updateInterest();
 
-    Server& server_;
+    [[maybe_unused]] Server& server_;
     Buffer in_;
     Buffer out_;
     // TODO(robbie): what else does a connection need to track? Consider: is it closed,

@@ -57,7 +57,7 @@ namespace tinyredis {
       void onWritable() override;
 
      private:
-      Server& server_;
+      [[maybe_unused]] Server& server_;
     };
 
     // TODO(robbie): a single accept() per wakeup is a bug under edge-triggered epoll --
