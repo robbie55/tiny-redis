@@ -1,11 +1,12 @@
 #include <gtest/gtest.h>
 
 #include <cstddef>
+#include <string>
 
 #include "core/buffer.h"
 
 namespace {
-  std::string generateRandomString(std::size_t size) {
+  std::string generatePattern(std::size_t size) {
     std::string byte;
     byte.resize(size);
 
@@ -21,7 +22,7 @@ namespace {
 
   TEST(Buffer, AppendAndRead) {
     tinyredis::Buffer buf{kInitialSize};
-    const std::string_view read{"Hello World"sv};
+    const std::string read{"Hello World"};
     buf.append(read);
 
     auto readable{buf.readable()};
@@ -33,7 +34,7 @@ namespace {
 
   TEST(Buffer, ConsumePartialThenRest) {
     tinyredis::Buffer buf{kInitialSize};
-    const std::string_view read{"Hello World"sv};
+    const std::string read{"Hello World"};
     buf.append(read);
 
     const auto prefix{7};
@@ -50,7 +51,7 @@ namespace {
   TEST(Buffer, CompactsInsteadOfGrowingWhenPrefixWasConsumed) {
     tinyredis::Buffer buf{kInitialSize};
 
-    const std::string_view write{generateRandomString(kInitialSize - 30)};
+    const std::string write{generatePattern(kInitialSize - 30)};
     buf.append(write);
 
     // read cursor at 20, 30 bytes in tail, so enough bytes to write 50 if we shifted
@@ -66,7 +67,7 @@ namespace {
     tinyredis::Buffer buf{kInitialSize};
 
     // grow write ptr, but leave readptr at 0, will force a resize
-    const std::string_view write{generateRandomString(kInitialSize - 10)};
+    const std::string write{generatePattern(kInitialSize - 10)};
     buf.append(write);
 
     buf.ensureWritable(30);
