@@ -75,6 +75,15 @@ epoll is Linux-only, so `tiny-redis-server` builds on Linux. The store and proto
 are portable and are built and unit-tested on macOS too, which keeps them from growing a
 dependency on the event loop.
 
+A Docker-based Linux environment is included for development on other platforms:
+
+```sh
+./scripts/dev.sh up
+./scripts/dev.sh test debug
+```
+
+See [`docs/development.md`](docs/development.md) for the full command list.
+
 ## License
 
 MIT
