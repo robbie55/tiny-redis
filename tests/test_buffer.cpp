@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <cstddef>
+#include <cstring>
 #include <string>
 
 #include "core/buffer.h"
@@ -89,6 +90,42 @@ namespace {
 
     EXPECT_TRUE(buf.size() == kBinary.size());
     EXPECT_TRUE(buf.readable() == kBinary);
+  }
+
+  TEST(Buffer, WritePtrBehavesAsAppend) {
+    tinyredis::Buffer buf{kInitialSize};
+    const std::string kWrite{generatePattern(20)};
+
+    buf.ensureWritable(kWrite.size());
+    std::memcpy(buf.writePtr(), kWrite.data(), kWrite.size());
+    buf.commit(kWrite.size());
+
+    EXPECT_TRUE(buf.size() == kWrite.size());
+    EXPECT_TRUE(buf.readable() == kWrite);
+  }
+
+  TEST(Buffer, AppendByteAppendsExactlyOneByte) {
+    tinyredis::Buffer buf{kInitialSize};
+
+    buf.appendByte('a');
+    buf.appendByte('\0');
+    buf.appendByte(static_cast<char>(0xff));
+
+    EXPECT_TRUE(buf.size() == 3);
+    EXPECT_TRUE(buf.readable() == "a\0\xff"sv);
+  }
+
+  TEST(Buffer, ClearResetsCursorsButKeepsCapacity) {
+    tinyredis::Buffer buf{kInitialSize};
+    const std::string kWrite{generatePattern(40)};
+    buf.append(kWrite);
+
+    buf.clear();
+
+    EXPECT_TRUE(buf.empty());
+    EXPECT_TRUE(buf.size() == 0);
+    EXPECT_TRUE(buf.capacity() == kInitialSize);
+    EXPECT_TRUE(buf.writableBytes() == kInitialSize);
   }
 
 }  // namespace
