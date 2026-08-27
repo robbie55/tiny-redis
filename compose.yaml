@@ -1,0 +1,27 @@
+# Long-lived dev container: `./scripts/dev.sh` execs into it rather than starting a new
+# container per command, so a build costs no container-start latency and the server can
+# stay running while you poke it with redis-cli from another shell.
+services:
+  dev:
+    build: .
+    image: tiny-redis-dev
+    container_name: tiny-redis-dev
+    init: true
+    working_dir: /work
+    ports:
+      # Only reachable from the host if the server binds 0.0.0.0 rather than the default
+      # 127.0.0.1 -- inside a container, loopback is the container's own. For benchmarks,
+      # run the client inside the container instead and leave this alone.
+      - "127.0.0.1:6380:6380"
+    volumes:
+      - .:/work
+      # build/ is a named volume, NOT part of the bind mount. Two reasons: the macOS and
+      # Linux CMakeCaches would otherwise fight over build/<preset>, and keeping object
+      # files off VirtioFS is a large compile-time win on Docker Desktop.
+      - build:/work/build
+      - ccache:/root/.ccache
+    command: ["sleep", "infinity"]
+
+volumes:
+  build:
+  ccache:
