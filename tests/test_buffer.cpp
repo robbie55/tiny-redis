@@ -18,31 +18,31 @@ namespace {
   }
 
   using namespace std::literals::string_view_literals;
-  const auto kInitialSize{100};
+  constexpr std::size_t kInitialSize{100};
 
   TEST(Buffer, AppendAndRead) {
     tinyredis::Buffer buf{kInitialSize};
-    const std::string read{"Hello World"};
-    buf.append(read);
+    constexpr std::string kRead{"Hello World"};
+    buf.append(kRead);
 
     auto readable{buf.readable()};
 
-    EXPECT_TRUE(readable == read);
-    EXPECT_TRUE(buf.size() == read.size());
+    EXPECT_TRUE(readable == kRead);
+    EXPECT_TRUE(buf.size() == kRead.size());
     EXPECT_FALSE(buf.empty());
   }
 
   TEST(Buffer, ConsumePartialThenRest) {
     tinyredis::Buffer buf{kInitialSize};
-    const std::string read{"Hello World"};
-    buf.append(read);
+    constexpr std::string kRead{"Hello World"};
+    buf.append(kRead);
 
-    const auto prefix{7};
-    buf.consume(prefix);
+    constexpr std::size_t kPrefix{7};
+    buf.consume(kPrefix);
 
-    EXPECT_TRUE(buf.readable() == read.substr(prefix));
+    EXPECT_TRUE(buf.readable() == kRead.substr(kPrefix));
 
-    buf.consume(read.size() - prefix);
+    buf.consume(kRead.size() - kPrefix);
 
     EXPECT_TRUE(buf.empty());
     EXPECT_TRUE(buf.writableBytes() == buf.capacity());
@@ -51,29 +51,29 @@ namespace {
   TEST(Buffer, CompactsInsteadOfGrowingWhenPrefixWasConsumed) {
     tinyredis::Buffer buf{kInitialSize};
 
-    const std::string write{generatePattern(kInitialSize - 30)};
-    buf.append(write);
+    const std::string kWrite{generatePattern(kInitialSize - 30)};
+    buf.append(kWrite);
 
-    // read cursor at 20, 30 bytes in tail, so enough bytes to write 50 if we shifted
-    const auto read{20};
-    buf.consume(read);
+    // read cursor at 20, 30 bytes in tail, so enough bytes to kWrite 50 if we shifted
+    constexpr std::size_t kRead{20};
+    buf.consume(kRead);
 
     buf.ensureWritable(50);
     EXPECT_TRUE(buf.capacity() == kInitialSize);
-    EXPECT_TRUE(buf.readable() == write.substr(read));
+    EXPECT_TRUE(buf.readable() == kWrite.substr(kRead));
   }
 
   TEST(Buffer, GrowsAndPreservesPendingBytes) {
     tinyredis::Buffer buf{kInitialSize};
 
-    // grow write ptr, but leave readptr at 0, will force a resize
-    const std::string write{generatePattern(kInitialSize - 10)};
-    buf.append(write);
+    // grow kWrite ptr, but leave readptr at 0, will force a resize
+    const std::string kWrite{generatePattern(kInitialSize - 10)};
+    buf.append(kWrite);
 
     buf.ensureWritable(30);
 
     EXPECT_TRUE(buf.capacity() == static_cast<std::size_t>(2 * kInitialSize));
-    EXPECT_TRUE(buf.readable() == write);
+    EXPECT_TRUE(buf.readable() == kWrite);
   }
 
   TEST(Buffer, IsBinarySafe) {
