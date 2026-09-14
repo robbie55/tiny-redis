@@ -97,7 +97,7 @@ if(TINYREDIS_BUILD_TESTS AND BUILD_TESTING)
   gtest_discover_tests(tinyredis_tests)
 endif()
 
-# ---- benchmark client (Day 3) -----------------------------------------------------------
+# ---- benchmark client -----------------------------------------------------------------
 
 if(TINYREDIS_BUILD_BENCH AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/bench/bench_client.cpp)
   find_package(Threads REQUIRED)

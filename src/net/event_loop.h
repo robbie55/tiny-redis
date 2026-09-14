@@ -8,7 +8,7 @@
 
 namespace tinyredis {
 
-  // Anything the loop can wake up on: the listening socket, and every client socket.
+  // Anything the loop can wake up on, meaning the listening socket and every client socket.
   class IoHandler {
    public:
     IoHandler(const IoHandler&) = delete;
@@ -27,20 +27,18 @@ namespace tinyredis {
     int fd_;
   };
 
-  // The epoll loop. Single-threaded: one thread owns every socket and the whole store,
-  // which is why nothing in core/ needs a lock.
+  // The epoll loop. One thread owns every socket and the whole store, which is why
+  // nothing in core/ needs a lock.
   //
-  // TODO(robbie): the decision that shapes everything else is level-triggered versus
-  // edge-triggered.
-  //   - Level-triggered: epoll re-reports a fd as long as data remains. Forgiving.
+  // TODO(robbie): level-triggered or edge-triggered? Everything else follows from this.
+  //   - Level-triggered: epoll keeps reporting a fd while data remains. Forgiving.
   //   - Edge-triggered (EPOLLET): reported once per readiness transition. Every handler
-  //     must then drain its fd until read() returns EAGAIN, or you will hang holding
-  //     unread bytes.
+  //     must drain its fd until read() returns EAGAIN, or it hangs holding unread bytes.
   // Work out what each costs in epoll_wait round trips per pipelined batch, pick one, and
-  // write down which you picked -- the connection code has to agree with you.
+  // write the choice down. The connection code has to agree with it.
   //
   // TODO(robbie): sockets must be non-blocking. Which syscalls set that, and why does
-  // accept4() exist when accept() plus fcntl() would do the same job?
+  // accept4() exist when accept() plus fcntl() does the same job?
   class EventLoop {
    public:
     EventLoop();
@@ -54,21 +52,21 @@ namespace tinyredis {
     void remove(IoHandler& h) noexcept;
 
     // Runs until stop(). `onTick` fires after each batch of events and on every timeout.
-    // TODO(robbie): this is what drives the periodic TTL sweep. What does that imply
-    // about the timeout you pass to epoll_wait when there is no traffic at all?
+    // TODO(robbie): this drives the periodic TTL sweep. What does that mean for the
+    // epoll_wait timeout when there's no traffic at all?
     void run(int timeoutMs, const std::function<void()>& onTick);
 
     void stop() noexcept;
 
     // Incremented once per epoll_wait return.
-    // TODO(robbie): Server uses this to sample the clock exactly once per iteration
-    // instead of once per command. Work out why that matters at 500k ops/sec.
+    // TODO(robbie): Server uses this to read the clock once per iteration instead of once
+    // per command. Why does that matter when one wakeup carries hundreds of commands?
     [[nodiscard]] std::uint64_t tick() const noexcept;
 
    private:
-    // TODO(robbie): the epoll fd, a running flag, the tick counter, and the buffer you
-    // hand to epoll_wait. How big should that last one be, and what happens when more
-    // fds are ready than it holds?
+    // TODO(robbie): the epoll fd, a running flag, the tick counter, and the event array
+    // for epoll_wait. How big should that array be, and what happens when more fds are
+    // ready than it holds?
   };
 
 }  // namespace tinyredis

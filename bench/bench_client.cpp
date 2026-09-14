@@ -1,21 +1,17 @@
 // Pipelined benchmark client.
 //
-// This is a deliverable, not a nice-to-have: the resume bullet is built on the number
-// this produces. redis-benchmark gives you the headline figure and is the credible
-// third-party measurement; this client exists so you can vary things redis-benchmark
-// will not, and so the methodology is yours.
+// redis-benchmark produces the headline figure as a third-party measurement. This client
+// covers what redis-benchmark can't vary, with a methodology we control.
 //
-// TODO(robbie): port the harness discipline from your pool-allocator repo.
+// TODO(robbie): port the harness discipline from pool-allocator.
 //   - Warmup before the timed region.
-//   - N trials, report the MEDIAN, not the mean. Reject outliers.
-//   - Latency percentiles p50 and p99. An average latency number is not defensible.
-//   - DCE guards so nothing you measure gets optimized away.
-//   - Pipelining depth as a parameter, so you can show the on/off comparison.
-//   - Record the machine, compiler, flags, and core pinning alongside every number.
+//   - N trials, report the median, not the mean. Reject outliers.
+//   - Latency p50 and p99, never an average.
+//   - DCE guards so nothing measured gets optimized away.
+//   - Pipeline depth as a parameter, for the on/off comparison.
+//   - Record machine, compiler, flags and core pinning with every number.
 //
-// Reporting rule for this project: a number that is not in a committed results file did
-// not happen. bench/results/ is gitignored for raw output -- keep the summary you publish
-// checked in.
+// A number that isn't in a committed file under bench/results/ didn't happen.
 
 #include <cstdio>
 

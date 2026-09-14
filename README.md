@@ -1,22 +1,20 @@
 # tiny-redis
 
-A single-threaded, in-memory key-value store in C++20 that speaks the real Redis wire
-protocol, so `redis-cli` and `redis-benchmark` talk to it unmodified. epoll event loop,
-RESP parser, TTL expiry, and a hash table whose entries are carved from a custom pool
+A single-threaded, in-memory key-value store in C++20. It speaks RESP, the Redis wire
+protocol, so `redis-cli` and `redis-benchmark` work against it unmodified. epoll event
+loop, RESP parser, TTL expiry, and a hash table whose entries come from a custom pool
 allocator.
 
-> **Status: in development.** No benchmark has been run yet. The table below stays empty
-> until there is a real measurement behind it.
+> **Status:** in development. No benchmark has run yet, so the table below is empty.
 
 ## Benchmark
 
-<!-- TODO(robbie): fill in from a real run. Rules for this table:
-     - Every number comes from a committed results file. No number goes in from memory.
+<!-- TODO(robbie): fill in from a real run.
+     - Every number comes from a committed results file.
      - Median of N trials after warmup, never a single run.
-     - p50 AND p99. An average latency is not defensible in an interview.
-     - State the hardware, compiler, flags, and core pinning below the table.
-     - If you measure real redis-server as a reference point, say so and use the same
-       flags on the same box. If you did not, drop that column entirely. -->
+     - p50 and p99, never an average.
+     - State hardware, compiler, flags and core pinning below the table.
+     - Add a redis-server column only if it ran on the same box with the same flags. -->
 
 | Workload | tiny-redis | p50 | p99 |
 |---|---|---|---|
@@ -29,23 +27,20 @@ Hardware / toolchain: _TBD_
 
 ## Architecture
 
-<!-- TODO(robbie): draw this once the design is actually yours. It should show the path a
-     request takes: socket -> event loop -> per-connection buffers -> RESP parse ->
-     dispatch -> store, and where the pool allocator sits. -->
+<!-- TODO(robbie): the path a request takes, socket -> event loop -> per-connection
+     buffers -> RESP parse -> dispatch -> store, and where the pool allocator sits. -->
 
 _TBD._
 
 ### Design notes
 
-<!-- TODO(robbie): this section is what a reader skims to decide whether you know your own
-     project. Write it last, from decisions you actually made, and give the reasoning --
-     not just what it does but what the alternative was and why you rejected it.
-     Candidates worth writing up:
-       - how parsing avoids copying, and what constrains buffer lifetime
+<!-- TODO(robbie): write this last, from decisions actually made. For each one, name the
+     alternative and why it lost. Candidates:
+       - how parsing avoids copies, and what that requires of buffer lifetime
        - how many write() calls a pipelined batch costs, and why
-       - clock sampling per event-loop iteration
+       - one clock read per event-loop iteration
        - the fixed-capacity pool, and what happens at the cap
-       - entry layout and why sizeof(Entry) is what it is
+       - entry layout and sizeof(Entry)
        - hash seeding -->
 
 _TBD._
@@ -71,9 +66,9 @@ redis-cli -p 6380 SET hello world
 
 Presets: `release`, `debug`, `asan` (AddressSanitizer + UBSan), `tsan`.
 
-epoll is Linux-only, so `tiny-redis-server` builds on Linux. The store and protocol layers
-are portable and are built and unit-tested on macOS too, which keeps them from growing a
-dependency on the event loop.
+epoll is Linux-only, so `tiny-redis-server` only builds on Linux. The store and protocol
+layers also build and pass their tests on macOS, and CI runs that job, so neither can pick
+up a dependency on the event loop.
 
 A Docker-based Linux environment is included for development on other platforms:
 

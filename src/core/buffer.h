@@ -28,7 +28,8 @@ namespace tinyredis {
     char* writePtr() noexcept;
     [[nodiscard]] std::size_t writableBytes() const noexcept;
 
-    // ensureWritable invalidates every outstanding writePtr() and readable()
+    // May compact or reallocate, which invalidates every outstanding writePtr() and
+    // readable().
     void ensureWritable(std::size_t n);
 
     // Publishes n bytes written at writePtr().
@@ -42,7 +43,6 @@ namespace tinyredis {
     void clear() noexcept;
 
    private:
-    // TODO(robbie): your storage and cursors go here.
     std::vector<char> buf_;
     std::size_t readIdx_{};
     std::size_t writeIdx_{};

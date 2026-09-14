@@ -3,8 +3,8 @@
 #include "core/store.h"
 
 // TODO(robbie): the test names below are a coverage checklist, not a limit.
-// Seed Store::Config with a fixed value so bucket layout is deterministic across runs.
-// Each body is a deliberate failure so an unwritten test can never read as green.
+// Seed Store::Config with a fixed value so bucket layout is the same every run.
+// Each body fails on purpose so an unwritten test never reads as green.
 
 TEST(Store, SetThenFind) { FAIL() << "TODO(robbie): not written yet"; }
 

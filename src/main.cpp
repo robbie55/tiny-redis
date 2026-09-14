@@ -43,8 +43,8 @@ int main(int argc, char** argv) {
     }
   }
 
-  // A client that disappears mid-write must not take the process with it. Writes also pass
-  // MSG_NOSIGNAL, but ignoring SIGPIPE outright removes the whole class of surprise.
+  // Writing to a closed socket raises SIGPIPE, which kills the process by default. A client
+  // that disconnects mid-write must not take the server down with it.
   std::signal(SIGPIPE, SIG_IGN);
 
   try {

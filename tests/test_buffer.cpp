@@ -55,7 +55,7 @@ namespace {
     const std::string kWrite{generatePattern(kInitialSize - 30)};
     buf.append(kWrite);
 
-    // read cursor at 20, 30 bytes in tail, so enough bytes to kWrite 50 if we shifted
+    // read cursor at 20, 30 bytes free at the tail, so only compaction fits 50
     constexpr std::size_t kRead{20};
     buf.consume(kRead);
 
@@ -67,7 +67,7 @@ namespace {
   TEST(Buffer, GrowsAndPreservesPendingBytes) {
     tinyredis::Buffer buf{kInitialSize};
 
-    // grow kWrite ptr, but leave readptr at 0, will force a resize
+    // read cursor stays at 0, so only a resize fits 30
     const std::string kWrite{generatePattern(kInitialSize - 10)};
     buf.append(kWrite);
 
@@ -78,7 +78,7 @@ namespace {
   }
 
   TEST(Buffer, IsBinarySafe) {
-    // payload with max val xFF, and a NUL x00
+    // includes 0xFF and NUL
     tinyredis::Buffer buf{kInitialSize};
     constexpr auto kBinary{
         "\xff\x00"

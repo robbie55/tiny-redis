@@ -12,12 +12,12 @@
 
 namespace tinyredis {
 
-  // Block count for the pool. PoolAllocator carves one aligned slab up front and never
-  // grows, so this is a hard ceiling on live keys.
+  // Pool block count. PoolAllocator carves one aligned slab up front and never grows, so
+  // this is a hard cap on live keys.
   //
-  // TODO(robbie): pick a number and understand what it costs. slab bytes = capacity *
-  // sizeof(Entry). What must Store do when the pool is exhausted -- and does that answer
-  // change if you take the LRU stretch?
+  // TODO(robbie): pick a number and know its cost, since slab bytes = capacity *
+  // sizeof(Entry). What must Store do when the pool runs out, and does the answer change
+  // with the LRU stretch?
 #ifndef TINYREDIS_POOL_CAPACITY
 #define TINYREDIS_POOL_CAPACITY (1u << 18)
 #endif
@@ -27,13 +27,12 @@ namespace tinyredis {
 
   // The key/value table.
   //
-  // TODO(robbie): open addressing or chaining? Write down why before you pick. A hint at
-  // what constrains you: which other parts of this codebase hold an Entry* across calls,
-  // and what does that forbid a rehash from doing?
+  // TODO(robbie): open addressing or chaining? Write down why before picking. To narrow
+  // it, ask which parts of this codebase hold an Entry* across calls, and what that
+  // forbids a rehash from doing.
   //
-  // Note that every method takes `now` from the caller instead of reading the clock
-  // itself. TODO(robbie): work out what that buys you -- there are two separate wins, one
-  // in the event loop and one in the tests.
+  // Every method takes `now` from the caller instead of reading the clock.
+  // TODO(robbie): what does that buy? Two wins, one in the event loop and one in tests.
   class Store {
    public:
     struct Config {
@@ -52,7 +51,7 @@ namespace tinyredis {
     Store& operator=(Store&&) = delete;
 
     // Returns nullptr when the key is absent or has expired.
-    // TODO(robbie): what should happen to an entry you discover is expired? (lazy expiry)
+    // TODO(robbie): what happens to an entry you find expired? That's lazy expiry.
     Entry* find(std::string_view key, std::int64_t now);
 
     // Returns false when the store cannot accept the key.
@@ -64,14 +63,14 @@ namespace tinyredis {
     // False when the key does not exist.
     bool setExpireAt(std::string_view key, std::int64_t expireAtMs, std::int64_t now);
 
-    // -2 when the key is absent, -1 when it exists with no TTL, else remaining ms.
-    // (These two sentinels are Redis's, not a choice -- TTL replies must match.)
+    // -2 when the key is absent, -1 when it has no TTL, else remaining ms. Redis defines
+    // both sentinels, and TTL replies must match.
     std::int64_t ttlMs(std::string_view key, std::int64_t now);
 
-    // Reaps expired entries. Returns the number reaped.
-    // TODO(robbie): lazy expiry alone leaks keys that are never touched again, so this
-    // runs periodically from the event loop. It therefore must not stall the loop. How do
-    // you bound the work per call and still make progress across the whole table?
+    // Reaps expired entries and returns how many.
+    // TODO(robbie): lazy expiry alone leaks keys nobody touches again, so the event loop
+    // runs this periodically and it must not stall the loop. How do you bound the work
+    // per call and still cover the whole table over time?
     std::size_t activeExpireCycle(std::int64_t now, std::size_t sampleLimit = 20);
 
     void clear();
@@ -81,8 +80,7 @@ namespace tinyredis {
     [[nodiscard]] std::size_t maxKeys() const noexcept;
 
    private:
-    // TODO(robbie): these are a suggested decomposition, not a requirement. Add, remove
-    // or rename freely -- it is your table.
+    // TODO(robbie): a suggested split, not a requirement. Add, remove or rename freely.
     Entry* allocEntry(std::string_view key, std::string_view value);
     void freeEntry(Entry* e) noexcept;
 
@@ -93,8 +91,8 @@ namespace tinyredis {
     void rehash(std::size_t newBucketCount);
     [[nodiscard]] std::size_t bucketOf(std::uint64_t h) const noexcept;
 
-    // TODO(robbie): your table state goes here -- the bucket array, the pool, a live
-    // count, the key cap, the hash seed, and whatever else your design needs.
+    // TODO(robbie): table state. Bucket array, pool, live count, key cap, hash seed, and
+    // whatever else the design needs.
   };
 
 }  // namespace tinyredis

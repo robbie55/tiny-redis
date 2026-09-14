@@ -22,17 +22,16 @@ namespace tinyredis {
 
   std::size_t Buffer::writableBytes() const noexcept { return buf_.size() - writeIdx_; }
 
-  // ensureWritable invalidates every outstanding writePtr() and readable()
   void Buffer::ensureWritable(std::size_t n) {
-    // space at tail end, nothing happens
+    // enough room at the tail already
     if (writableBytes() >= n) {
       return;
     }
 
-    // we compact whether we need to resize or not
+    // compact even if we end up resizing
     compact();
 
-    // space in prefix before read, memmove
+    // compaction reclaimed the consumed prefix
     if (writableBytes() >= n) {
       return;
     }

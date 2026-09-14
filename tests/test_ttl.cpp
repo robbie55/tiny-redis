@@ -3,8 +3,8 @@
 #include "core/store.h"
 
 // TODO(robbie): the test names below are a coverage checklist, not a limit.
-// Time is a parameter, never a sleep -- pass 'now' explicitly so these stay deterministic under
-// ASan. Each body is a deliberate failure so an unwritten test can never read as green.
+// Pass `now` explicitly instead of sleeping, so these stay deterministic under ASan.
+// Each body fails on purpose so an unwritten test never reads as green.
 
 TEST(Ttl, KeyIsVisibleBeforeItsDeadline) { FAIL() << "TODO(robbie): not written yet"; }
 
