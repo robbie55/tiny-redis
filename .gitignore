@@ -6,3 +6,8 @@ compile_commands.json
 .DS_Store
 TODO.md
 ROADMAP.md
+
+# Claude Code
+CLAUDE.md
+CLAUDE.local.md
+.claude/
