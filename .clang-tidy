@@ -14,6 +14,8 @@ Checks: >
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -misc-non-private-member-variables-in-classes,
@@ -50,6 +52,13 @@ Checks: >
 #   cppcoreguidelines-pro-bounds-array-to-pointer-decay
 #       Fires on assert() and ordinary C-string interop. Satisfying it needs gsl::span
 #       everywhere, and we don't use GSL.
+#   cppcoreguidelines-pro-bounds-constant-array-index
+#       Flags every runtime index into a std::array, like Command::argv[i] in the parse
+#       loop. The fix it wants is gsl::at().
+#   cppcoreguidelines-pro-bounds-avoid-unchecked-container-access
+#       The same check extended to std::vector and std::string_view, so it hits every
+#       buffer index on the hot path. Arity checks and length validation enforce bounds
+#       here, not a check per access.
 #   cppcoreguidelines-pro-bounds-pointer-arithmetic
 #       Flags every char* loop in buffer code. Use std::span where it fits.
 #   cppcoreguidelines-pro-type-reinterpret-cast
