@@ -14,6 +14,8 @@ Checks: >
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -misc-non-private-member-variables-in-classes,
@@ -22,115 +24,74 @@ Checks: >
   -readability-identifier-length,
   -readability-magic-numbers
 
-# Why these are ENABLED:
-#   bugprone-*           — likely-bug patterns (uninit, narrowing, dangling). Cheap, accurate.
-#   clang-analyzer-*     — full data-flow static analysis. Catches things lints can't (e.g.
-#                          use-after-free across branches). Distinct from the rest.
-#   concurrency-*        — won't fire much on a single-threaded event loop, but free insurance.
-#   cppcoreguidelines-*  — Bjarne/Herb's rules. Opinionated and educational — exactly what
-#                          you want as a C++ learner. Several pro-* sub-checks are too strict
-#                          for systems code; see disables below.
-#   misc-*               — grab bag, includes useful ones like misc-include-cleaner and
-#                          misc-const-correctness.
-#   modernize-*          — pushes toward modern idioms (smart pointers, ranged-for, override,
-#                          using-aliases over typedefs). Highly educational.
-#   performance-*        — copy/move/string smells. Cheap signal.
-#   portability-*        — Linux + macOS targets means this matters; flags
-#                          implementation-defined behaviour.
-#   readability-*        — clarity rules. Some overlap with clang-format (which handles
-#                          whitespace); these handle structure (long functions, deep nesting,
-#                          implicit bool conversions).
+# Enabled:
+#   bugprone-*           likely bugs: uninit, narrowing, dangling. Cheap and accurate.
+#   clang-analyzer-*     data-flow analysis. Catches what lints can't, e.g. use-after-free
+#                        across branches.
+#   concurrency-*        rarely fires on a single-threaded loop. Costs nothing to keep.
+#   cppcoreguidelines-*  the C++ Core Guidelines. Several pro-* checks are too strict for
+#                        systems code, see the disables below.
+#   misc-*               grab bag, incl. misc-include-cleaner and misc-const-correctness.
+#   modernize-*          smart pointers, range-for, override, using over typedef.
+#   performance-*        copy, move and string smells.
+#   portability-*        implementation-defined behaviour. We target Linux and macOS.
+#   readability-*        structure: long functions, deep nesting, implicit bool
+#                        conversions. clang-format handles whitespace.
 #
-# Why these are DISABLED:
+# Disabled:
 #   bugprone-easily-swappable-parameters
-#       Fires on every function with two same-typed parameters: f(int x, int y), f(int w,
-#       int h). Honest TUI / coordinate code is full of these. Too noisy, low yield.
+#       Fires on every function with two same-typed parameters, like takeBytes(in, at,
+#       len). Too noisy.
 #   cppcoreguidelines-avoid-magic-numbers / readability-magic-numbers
-#       Fires on EVERY integer literal that isn't 0 or 1. In TUI code (column counts, key
-#       codes, terminal escape sequences) this is unbearable. Re-enable later when you have
-#       a better sense of where named constants actually help.
+#       Fires on every literal other than 0 and 1. Protocol code is full of fixed byte
+#       counts, like the 2 in a CRLF.
 #   cppcoreguidelines-non-private-member-variables-in-classes /
 #   misc-non-private-member-variables-in-classes
-#       Both forbid public/protected data members. But `struct` is a legitimate C++ tool for
-#       passive-data aggregates (POD types, MI-protocol record structs). The duplicate also
-#       means double diagnostics if both stay on.
+#       Both forbid public data members, but plain aggregates are fine as structs. Keeping
+#       both on would also double every diagnostic.
 #   cppcoreguidelines-pro-bounds-array-to-pointer-decay
-#       Fires on `assert(x)` and a bunch of legitimate C-string interop. Known false-positive
-#       generator. The Core Guidelines themselves admit this rule is impractical without
-#       gsl::span everywhere — and we're not pulling in GSL.
+#       Fires on assert() and ordinary C-string interop. Satisfying it needs gsl::span
+#       everywhere, and we don't use GSL.
+#   cppcoreguidelines-pro-bounds-constant-array-index
+#       Flags every runtime index into a std::array, like Command::argv[i] in the parse
+#       loop. The fix it wants is gsl::at().
+#   cppcoreguidelines-pro-bounds-avoid-unchecked-container-access
+#       The same check extended to std::vector and std::string_view, so it hits every
+#       buffer index on the hot path. Arity checks and length validation enforce bounds
+#       here, not a check per access.
 #   cppcoreguidelines-pro-bounds-pointer-arithmetic
-#       Same problem: any C-string or buffer code lights up. Reach for std::span where it
-#       fits, but don't have the linter scream at every char* loop.
+#       Flags every char* loop in buffer code. Use std::span where it fits.
 #   cppcoreguidelines-pro-type-reinterpret-cast
-#       A pool allocator IS the reinterpret_cast use case: raw storage from ::operator new
-#       is reinterpreted as a free-list Node while free and as a T while in use. There is no
-#       static_cast spelling of that, so the check would fire on every line that matters.
+#       A pool allocator reinterprets raw storage as a free-list node while free and as a
+#       T while live. No static_cast does that, so the check fires on the lines that
+#       matter.
 #   misc-no-recursion
-#       Recursion is a normal tool. AST walks, MI-record parsing, tree rendering — all
-#       naturally recursive. The check is over-broad.
+#       Recursion is a normal tool.
 #   modernize-use-trailing-return-type
-#       `auto f() -> int` over `int f()`. Genuinely controversial; many seniors find it
-#       harder to scan. Leave off unless you decide you like it.
+#       Wants `auto f() -> int` over `int f()`, which is harder to scan.
 #   readability-identifier-length
-#       Forbids 1-character names. `for (int i = 0; ...)` is fine. Loop indices and short
-#       lambda params don't need to be `index_counter`.
+#       Forbids one-character names, which rules out `i` in a loop.
 
-# WarningsAsErrors
-# ----------------
-# '*' promotes every enabled diagnostic to an error. This is the strict choice: no warning
-# rot. The cost: any clang-tidy hit becomes a hard fail.
-#
-# Editor-vs-CI tension: if you wire this into CMAKE_CXX_CLANG_TIDY, every build fails on
-# any warning, which is great for discipline but painful while iterating. Two ways out:
-#   (1) Run clang-tidy only in CI / pre-commit (recommended for now).
-#   (2) Keep WarningsAsErrors='*' here for CI, and run editor-time tidy through clangd's
-#       --tidy-checks flag separately (clangd surfaces them as squiggles, not failures).
+# Every enabled diagnostic is an error. Run clang-tidy through `./scripts/dev.sh tidy`
+# rather than CMAKE_CXX_CLANG_TIDY, which would fail every build on any hit. clangd shows
+# the same checks in the editor.
 WarningsAsErrors: '*'
 
-# HeaderFilterRegex
-# -----------------
-# clang-tidy lints every translation unit's headers it sees — INCLUDING system, vendored,
-# and FetchContent'ed library headers. Without a filter, you'd be linting libstdc++ and
-# ftxui's source. This regex restricts header diagnostics to files inside this project.
-#
-# How: clang-tidy applies the regex to the absolute path of each header. Negative
-# lookahead (?!...) excludes anything whose path contains a build/ component. The trailing
-# extension match limits to C/C++ header extensions.
-#
-# Adjust if you reorganise into src/ + include/ — at that point you can tighten this to
-# `.*tiny-redis/(src|tests)/.*\.(h|hpp)$` for an even narrower allowlist.
+# Without a filter, clang-tidy reports on every header it sees, libstdc++ and FetchContent
+# deps included. This keeps project headers and skips build/, where the deps land.
 HeaderFilterRegex: '.*tiny-redis/(?!build/).*\.(h|hh|hpp|hxx)$'
 
-# FormatStyle
-# -----------
-# Lets clang-tidy auto-fixes use your .clang-format style instead of LLVM defaults. Means
-# `clang-tidy --fix` produces patches that match the rest of your code.
+# `clang-tidy --fix` follows .clang-format instead of LLVM defaults.
 FormatStyle: file
 
-# CheckOptions
-# ------------
-# Per-check tuning. The big ones:
-#   - readability-identifier-naming enforces a naming scheme. Mostly Google's C++ style
-#     (consistent with BasedOnStyle: Google in .clang-format), but all variables —
-#     locals, parameters and data members — deliberately use camelCase for this project:
-#       * Types (class/struct/enum/alias):  CamelCase
-#       * Functions / methods:              CamelCase  (Google convention; flip to camelBack
-#                                                       if you'd rather)
-#       * Variables / parameters:           camelBack     (project preference, not Google)
-#       * Data members:                     camelBack
-#       * Private/protected members:        camelBack_    (trailing underscore)
-#       * Constants and constexpr:          kCamelCase
-#       * Enum constants:                   kCamelCase
-#       * Namespaces:                       lower_case
-#       * Macros:                           UPPER_CASE
-#       * Template parameters:              CamelCase
-#
-#   - readability-function-size and readability-function-cognitive-complexity bound how
-#     gnarly a single function is allowed to be. Defaults are too lenient; the values below
-#     are strict-but-shippable.
-#
-#   - modernize-use-auto.MinTypeNameLength=5 keeps `int i = 0` from being rewritten to
-#     `auto i = 0` while still pushing for `auto` on long iterator/template types.
+# Naming:
+#   types, enums, aliases, template params   CamelCase
+#   functions, methods                       camelBack
+#   variables, parameters, members           camelBack
+#   private/protected members                camelBack_
+#   constants, constexpr, enum constants     kCamelCase
+#   namespaces                               lower_case
+#   macros                                   UPPER_CASE
 CheckOptions:
   # ---- Naming ----
   - { key: readability-identifier-naming.ClassCase,                value: CamelCase }
@@ -169,11 +130,10 @@ CheckOptions:
   - { key: readability-identifier-naming.MacroDefinitionCase,      value: UPPER_CASE }
 
   # ---- Complexity bounds ----
-  # Cognitive complexity = a structured measure of how hard a function is to follow.
-  # Default 25 is generous; 20 forces splitting genuinely tangled functions.
+  # Default is 25. 20 forces tangled functions to split.
   - { key: readability-function-cognitive-complexity.Threshold,    value: '20' }
 
-  # Function-size thresholds. Each threshold can fire independently.
+  # Each threshold fires independently.
   - { key: readability-function-size.LineThreshold,                value: '80' }
   - { key: readability-function-size.StatementThreshold,           value: '50' }
   - { key: readability-function-size.BranchThreshold,              value: '10' }
@@ -182,18 +142,17 @@ CheckOptions:
   - { key: readability-function-size.VariableThreshold,            value: '15' }
 
   # ---- modernize tuning ----
-  # Don't rewrite `int i = 0` to `auto i = 0` — auto only earns its keep on longer types.
+  # Leave `int i = 0` alone. auto is for long type names.
   - { key: modernize-use-auto.MinTypeNameLength,                   value: '5' }
   # Prefer `= default` and `= delete` over hand-written empty bodies.
   - { key: modernize-use-equals-default.IgnoreMacros,              value: 'true' }
 
   # ---- bugprone tuning ----
-  # Let assertions side-effect freely (assert(read(fd, buf, n) == n)). Matters for tests.
+  # Macros checked for side effects. A side effect inside assert() vanishes under NDEBUG.
   - { key: bugprone-assert-side-effect.AssertMacros,
       value: 'assert,NSAssert,NSCAssert' }
 
   # ---- readability tuning ----
-  # Forbid implicit int-to-bool: `if (n)` becomes `if (n != 0)`. Catches a real category
-  # of bugs (forgetting to compare).
+  # `if (n)` must be `if (n != 0)`, and the same for pointers.
   - { key: readability-implicit-bool-conversion.AllowIntegerConditions, value: 'false' }
   - { key: readability-implicit-bool-conversion.AllowPointerConditions, value: 'false' }

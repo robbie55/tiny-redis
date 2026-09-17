@@ -6,24 +6,23 @@
 
 namespace tinyredis {
 
-  // One stored key/value pair. Entries are carved from the pool allocator, so every
-  // entry is the same size and that size is fixed at compile time.
+  // One stored key/value pair. Entries come from the pool allocator, so every entry has
+  // the same size, fixed at compile time.
   //
-  // TODO(robbie): this is the central data-structure decision in the project, and the one
-  // you are most likely to be asked about. Design the layout yourself. It has to let you:
-  //
-  //   - link the entry into a hash chain
-  //   - link it into an intrusive LRU list, if you take that stretch
-  //   - answer key() and value() as byte ranges, binary-safe (NUL is a legal byte)
-  //   - carry an absolute expiry deadline, and distinguish "no TTL" from "expires at 0"
+  // TODO(robbie): the project's central data-structure decision, and the one you'll most
+  // likely be asked about. The layout has to:
+  //   - link into a hash chain
+  //   - link into an intrusive LRU list, if you take that stretch
+  //   - return key() and value() as binary-safe byte ranges, NUL included
+  //   - hold an absolute expiry deadline and tell "no TTL" apart from "expires at 0"
   //   - avoid re-reading key bytes when the table rehashes
   //
-  // Questions worth answering before you write it:
+  // Answer these first:
   //   - redis-benchmark's default key/value pair is ~19 bytes. Should small pairs live
-  //     inside the entry, or behind a pointer? What does each cost on a GET?
+  //     inside the entry or behind a pointer? What does each cost on a GET?
   //   - If small pairs live inline, what happens to a 4 KB value?
-  //   - What should sizeof(Entry) be, and what does the cache line size have to do with
-  //     it? Consider a static_assert once you have decided, so it cannot drift.
+  //   - What should sizeof(Entry) be, and how does cache line size bear on it? Pin it
+  //     with a static_assert once decided.
   struct Entry {
     // TODO(robbie): your fields go here.
 

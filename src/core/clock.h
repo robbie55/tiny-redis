@@ -5,8 +5,8 @@
 
 namespace tinyredis {
 
-  // Milliseconds from a monotonic source. TTLs must not move when the wall clock is
-  // stepped by NTP, so steady_clock is the only correct choice here.
+  // Milliseconds from a monotonic clock. TTLs must not move when NTP steps the wall clock,
+  // so this reads steady_clock.
   inline std::int64_t nowMs() noexcept {
     const auto t{std::chrono::steady_clock::now().time_since_epoch()};
     return std::chrono::duration_cast<std::chrono::milliseconds>(t).count();

@@ -36,14 +36,14 @@ namespace tinyredis {
     Store& store() noexcept;
     EventLoop& loop() noexcept;
 
-    // TODO(robbie): one clock read per event-loop iteration, shared by every command in
-    // the batch -- not one read per command. Cache it against the loop's tick counter.
+    // TODO(robbie): read the clock once per event-loop iteration and share it across the
+    // batch. Cache it against the loop's tick counter.
     std::int64_t now() noexcept;
 
-    // Called by a Connection that has decided it is finished.
-    // TODO(robbie): you cannot just delete it here. A socket can be reported both
-    // readable and writable in the same epoll_wait return, and the second callback would
-    // then run against a freed object. When is it actually safe to destroy?
+    // Called by a Connection that is finished.
+    // TODO(robbie): you can't delete it here. epoll_wait can report a socket readable and
+    // writable in one return, and the second callback would run on a freed object. When
+    // is it safe to destroy?
     void retire(Connection& c);
 
     [[nodiscard]] std::size_t connectionCount() const noexcept;
@@ -57,13 +57,13 @@ namespace tinyredis {
       void onWritable() override;
 
      private:
-      Server& server_;
+      [[maybe_unused]] Server& server_;
     };
 
-    // TODO(robbie): a single accept() per wakeup is a bug under edge-triggered epoll --
-    // and a throughput problem under any mode when 50 clients connect at once. Drain it.
-    // Also: what does SO_REUSEADDR fix, and what happens without TCP_NODELAY on the
-    // accepted socket when you are measuring latency?
+    // TODO(robbie): one accept() per wakeup is a bug under edge-triggered epoll, and a
+    // throughput problem in any mode when 50 clients connect at once. Drain it. Also, what
+    // does SO_REUSEADDR fix, and what does leaving TCP_NODELAY off the accepted socket do
+    // to latency measurements?
     void acceptPending();
     void reapRetired();
 
@@ -72,8 +72,8 @@ namespace tinyredis {
     EventLoop loop_;
     std::unique_ptr<Acceptor> acceptor_;
     std::unordered_map<int, std::unique_ptr<Connection>> connections_;
-    // TODO(robbie): connections pending destruction, the cached clock reading and the
-    // tick it belongs to, and when the last expiry sweep ran.
+    // TODO(robbie): connections pending destruction, the cached clock reading and its
+    // tick, and when the last expiry sweep ran.
   };
 
 }  // namespace tinyredis

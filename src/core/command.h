@@ -12,23 +12,22 @@ namespace tinyredis {
 
   // Executes one parsed command and appends its RESP reply to `out`.
   //
-  // The command set (core spec): GET, SET, DEL, EXISTS, EXPIRE, TTL, PING.
-  // Worth adding once those work, for redis-cli ergonomics: ECHO, DBSIZE, FLUSHALL, QUIT.
+  // Core commands: GET, SET, DEL, EXISTS, EXPIRE, TTL, PING. ECHO, DBSIZE, FLUSHALL and
+  // QUIT come after, because redis-cli sessions reach for them.
   //
-  // TODO(robbie): things to get right, roughly in the order they will bite you.
-  //   - Command names are case-insensitive on the wire. "get", "GET" and "GeT" are one
-  //     command. Do that without allocating.
-  //   - Wrong arity gets a specific error: "-ERR wrong number of arguments for 'get'
-  //     command". Match Redis's text; redis-cli surfaces it verbatim.
-  //   - SET takes options: EX <s>, PX <ms>, KEEPTTL. What does a bare SET do to an
-  //     existing key's TTL, and is that the same thing KEEPTTL does?
-  //   - `now` is passed in rather than read here. Every command in one pipelined batch
-  //     sees the same timestamp. Convince yourself that is correct before relying on it.
-  //   - EXPIRE takes a relative number of seconds, but Store wants an absolute deadline.
-  //     Where does that conversion belong, and what does a negative TTL mean?
+  // TODO(robbie): roughly in the order they'll bite.
+  //   - Command names are case-insensitive, so "get", "GET" and "GeT" match. Do it
+  //     without allocating.
+  //   - Wrong arity gets "-ERR wrong number of arguments for 'get' command". redis-cli
+  //     prints it verbatim, so match Redis's text.
+  //   - SET takes EX <s>, PX <ms> or KEEPTTL. What does a bare SET do to an existing
+  //     key's TTL, and is that what KEEPTTL does?
+  //   - The caller passes `now`, so every command in a pipelined batch sees one
+  //     timestamp. Convince yourself that's correct before relying on it.
+  //   - EXPIRE takes relative seconds, but Store wants an absolute deadline. Where does
+  //     that conversion belong, and what does a negative TTL mean?
   //
-  // Returns kCloseConnection for QUIT, and for anything the connection cannot recover
-  // from.
+  // Returns kCloseConnection for QUIT and for anything the connection can't recover from.
   DispatchResult dispatch(Store& store, const Command& cmd, std::int64_t now, Buffer& out);
 
 }  // namespace tinyredis

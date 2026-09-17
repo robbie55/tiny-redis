@@ -28,7 +28,7 @@ include(FetchContent)
 # benchmark targets and drag doctest into our build graph.
 FetchContent_Declare(pool_allocator
   GIT_REPOSITORY https://github.com/robbie55/pool-allocator.git
-  GIT_TAG        36f63318d2dd2f2b0fab5a9d0ede7139ba3014d5
+  GIT_TAG        b2489fec35463fe942e08f439107aaa65b6ced77
   SOURCE_SUBDIR  header-only-no-cmake
 )
 FetchContent_MakeAvailable(pool_allocator)
@@ -97,7 +97,7 @@ if(TINYREDIS_BUILD_TESTS AND BUILD_TESTING)
   gtest_discover_tests(tinyredis_tests)
 endif()
 
-# ---- benchmark client (Day 3) -----------------------------------------------------------
+# ---- benchmark client -----------------------------------------------------------------
 
 if(TINYREDIS_BUILD_BENCH AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/bench/bench_client.cpp)
   find_package(Threads REQUIRED)

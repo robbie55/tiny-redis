@@ -1,12 +1,12 @@
 # Linux build/dev/bench environment for tiny-redis.
 #
 # epoll is Linux-only, so src/net and every benchmark number come from in here. The
-# portable core (src/core) still builds and tests natively on macOS -- use that for the
+# portable core in src/core still builds and tests natively on macOS. Use that for the
 # fast unit-test loop and this for anything touching a socket.
 #
-# No --platform pin on purpose: the image builds for the host architecture. On Apple
-# Silicon that is linux/arm64 running natively under Virtualization.framework. Forcing
-# linux/amd64 here would silently drag in Rosetta emulation and make every measurement
+# No --platform pin, on purpose. The image builds for the host architecture, which on
+# Apple Silicon is linux/arm64 running natively under Virtualization.framework. Forcing
+# linux/amd64 would run everything under Rosetta emulation and make every measurement
 # worthless. `./scripts/dev.sh up` checks for that and warns.
 FROM ubuntu:24.04
 
@@ -14,7 +14,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # build-essential -> gcc-13/g++-13, which is C++20-complete.
 # cmake on 24.04 is 3.28, satisfying our cmake_minimum_required(3.25).
-# redis-tools -> redis-cli and redis-benchmark, the T-11 gate and a T-13 data source.
+# redis-tools -> redis-cli for smoke tests, redis-benchmark for the benchmark.
 # clang-format/clang-tidy match the CI lint jobs so formatting fails here, not on CI.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential \
