@@ -53,6 +53,14 @@ _TBD._
 Both wire forms are accepted: RESP arrays of bulk strings (what every real client sends)
 and inline commands (`PING\r\n` typed at a socket). Keys and values are binary-safe.
 
+Three limits are enforced when the header is parsed, before any payload is buffered: 64 MiB
+per bulk string, 64 KiB per inline command line, and 16 arguments per command. Exceeding one
+is a protocol error. The bulk length is a number the client chooses, so it is checked before
+it is trusted — `$4294967295` costs the sender eleven bytes. The inline cap is far lower
+because an inline command carries no length at all: the only way to find its end is to scan
+for a terminator, so an unterminated line has to be buffered until the cap says stop. For
+reference, the equivalent knob in Redis is `proto-max-bulk-len`, which defaults to 512MB.
+
 ## Build
 
 ```sh

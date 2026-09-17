@@ -3,24 +3,41 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string_view>
 
 #include "core/buffer.h"
 
-namespace tinyredis {
+// RESP2 request parsing and reply encoding.
+// Spec: https://redis.io/docs/latest/develop/reference/protocol-spec/
 
-  // TODO(robbie): these are limits, not capacities. A parser that trusts a length prefix
-  // off the wire will happily try to allocate whatever a client claims. Decide what each
-  // bound should be and what you reply when one is exceeded.
+namespace tinyredis {
+  enum class Error : uint8_t { kArgLength, kBulkLength, kInlineLength };
+
+  constexpr std::string_view errorToString(Error e) {
+    switch (e) {
+      case Error::kArgLength:
+        return "ERR Protocol error: invalid multibulk length";
+      case Error::kBulkLength:
+        return "ERR Protocol error: invalid bulk length";
+      case Error::kInlineLength:
+        return "ERR Protocol error: too big inline request";
+      default:
+        return "ERR Unknown";
+    }
+  }
+
+  // SET key value EX n is the widest command we accept, at five args.
   inline constexpr std::size_t kMaxArgs{16};
+
+  // Redis defaults proto-max-bulk-len to 512 MB. This cap is tighter.
   inline constexpr std::size_t kMaxBulkLength{static_cast<std::size_t>(64 * 1024 * 1024)};
+
+  // Redis's PROTO_INLINE_MAX_SIZE. Inline has no length prefix, so this is the only bound
+  // on an unterminated line.
   inline constexpr std::size_t kMaxInlineLength{static_cast<std::size_t>(64 * 1024)};
 
-  // One parsed command.
-  //
-  // TODO(robbie): the arguments are string_views, not strings. Into what do they point,
-  // and what does that forbid the caller from doing before the reply has been written?
-  // This is the "zero-copy parsing" claim in the README -- make sure you can defend it.
+  // One parsed command. argv views point into the caller's input buffer.
   struct Command {
     std::array<std::string_view, kMaxArgs> argv{};
     std::size_t argc{0};
@@ -28,11 +45,7 @@ namespace tinyredis {
     std::string_view operator[](std::size_t i) const noexcept { return argv[i]; }  // NOLINT
   };
 
-  enum class ParseStatus : std::uint8_t {
-    kOk,            // a complete command was produced
-    kIncomplete,    // need more bytes; call again after the next read
-    kProtocolError  // unrecoverable
-  };
+  enum class ParseStatus : std::uint8_t { kOk, kIncomplete, kProtocolError };
 
   struct ParseResult {
     ParseStatus status{ParseStatus::kIncomplete};
@@ -40,22 +53,62 @@ namespace tinyredis {
     std::string_view error;
   };
 
-  // Parses ONE command from the front of `in`.
+  // parseCommand internals. Public for tests only.
+  namespace detail {
+    // Room for a type byte, a sign and any 64-bit count. An overlong count still reads as a
+    // line and fails as a bad length.
+    inline constexpr std::size_t kMaxHeaderLength{32};
+
+    enum class LineStatus : std::uint8_t {
+      kFound,
+      kIncomplete,  // no terminator yet, still within budget
+      kTooLong,     // no legal line fits in maxLen, the caller picks the error
+      kBadTrailer,  // takeBytes only, payload arrived without CRLF after it
+    };
+
+    struct Line {
+      LineStatus status{LineStatus::kIncomplete};
+      std::string_view text;  // terminator excluded
+      std::size_t next{};     // offset past the terminator, kFound only
+    };
+
+    // Inline commands may end at a bare LF; the array form requires CRLF.
+    enum class Framing : std::uint8_t {
+      kStrict,
+      kInline,
+    };
+
+    Line readLine(std::string_view in, std::size_t at, std::size_t maxLen,
+                  Framing framing) noexcept;
+
+    // Takes exactly `len` bytes at `at` and checks that CRLF follows. Never scans the
+    // payload, since NUL, CR and LF are all legal inside it.
+    [[nodiscard]] Line takeBytes(std::string_view in, std::size_t at, std::size_t len) noexcept;
+
+    // Parses header digits with the type byte and CRLF already stripped. Canonical unsigned
+    // decimal only, so "0" passes and "007", "+1", "-1", "12 " don't. nullopt on overflow.
+    // Redis treats "*-1" as a no-op. Here it's a protocol error.
+    [[nodiscard]] std::optional<std::size_t> readInt(std::string_view s) noexcept;
+
+    // Protocol-error result with consumed = 0. The connection closes after replying.
+    [[nodiscard]] ParseResult fail(Error e) noexcept;
+
+    void clear(Command& cmd);
+
+    ParseResult parseArray(std::string_view in, Command& out) noexcept;
+    ParseResult parseInline(std::string_view in, Command& out) noexcept;
+
+  }  // namespace detail
+
+  // Parses one command, array or inline form, from the front of `in`. A strict prefix of a
+  // valid command returns kIncomplete and consumes nothing.
   //
-  // TODO(robbie): two wire forms have to work.
-  //   - RESP arrays of bulk strings: "*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n"
-  //     This is what redis-cli and redis-benchmark send. Get this one right first.
-  //   - Inline commands: "PING\r\n" typed straight at a socket.
-  //
-  // The hard part is not the happy path, it is that TCP hands you arbitrary fragments.
-  // Every prefix of a valid command must return kIncomplete and consume nothing, and the
-  // next call after more bytes arrive must succeed. Test it byte-by-byte.
+  // `out` is valid only on kOk, with every slot past argc empty. Any other status clears it.
+  // Callers reuse one Command across a pipelined batch, so a stale slot would hand an arity
+  // bug the previous command's bytes.
   ParseResult parseCommand(std::string_view in, Command& out) noexcept;
 
   // Reply encoders. Each appends one RESP value to `out`.
-  // TODO(robbie): spec at https://redis.io/docs/latest/develop/reference/protocol-spec/
-  // Note the difference between a null bulk string and an empty one -- GET on a missing
-  // key and GET on a key set to "" must not produce the same bytes.
   namespace reply {
 
     void simpleString(Buffer& out, std::string_view s);
