@@ -18,6 +18,7 @@ Checks: >
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-union-access,
   -misc-non-private-member-variables-in-classes,
   -misc-no-recursion,
   -modernize-use-trailing-return-type,
@@ -65,6 +66,10 @@ Checks: >
 #       A pool allocator reinterprets raw storage as a free-list node while free and as a
 #       T while live. No static_cast does that, so the check fires on the lines that
 #       matter.
+#   cppcoreguidelines-pro-type-union-access
+#       Flags every union member read. Entry's tail is a union of inline bytes and a spill
+#       pointer; the fix it wants, std::variant, adds its own tag, and Entry already
+#       derives one from keyLen + valLen.
 #   misc-no-recursion
 #       Recursion is a normal tool.
 #   modernize-use-trailing-return-type
