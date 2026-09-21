@@ -50,8 +50,11 @@ namespace tinyredis {
     Store(Store&&) = delete;
     Store& operator=(Store&&) = delete;
 
-    // Returns nullptr when the key is absent or has expired.
-    // TODO(robbie): what happens to an entry you find expired? That's lazy expiry.
+    // Returns nullptr when the key is absent or has expired. An expired entry is freed here
+    // (lazy expiry), as in every keyed method.
+    //
+    // An Entry* from find, and the views from its key()/value(), are valid only until the
+    // next call into this Store. Lookups free expired entries, so find and ttlMs count.
     Entry* find(std::string_view key, std::int64_t now);
 
     // Returns false when the store cannot accept the key.

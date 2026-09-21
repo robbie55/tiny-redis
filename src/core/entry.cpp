@@ -6,7 +6,6 @@ namespace tinyredis {
 
   std::string_view Entry::value() const noexcept { return getBufData(keyLen, valLen); }
 
-  // True once `now` has reached the entry's deadline. Persistent keys never expire.
   bool Entry::expired(std::int64_t now) const noexcept {
     if (expiresAtMs == kNoExpiry) {
       return false;

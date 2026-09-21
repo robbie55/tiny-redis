@@ -8,7 +8,7 @@
 
 TEST(Ttl, KeyIsVisibleBeforeItsDeadline) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
 
-TEST(Ttl, KeyIsGoneAtAndAfterItsDeadline) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
+TEST(Ttl, KeyIsGoneAfterItsDeadline) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
 
 TEST(Ttl, ReportsRemainingMilliseconds) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
 

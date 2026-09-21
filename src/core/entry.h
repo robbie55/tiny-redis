@@ -55,7 +55,7 @@ namespace tinyredis {
 
     [[nodiscard]] std::string_view value() const noexcept;
 
-    // True once `now` has reached the entry's deadline. Persistent keys never expire.
+    // True once `now` has exceeded the entry's deadline. Persistent keys never expire.
     [[nodiscard]] bool expired(std::int64_t now) const noexcept;
   };
 #if defined(__GNUC__)
