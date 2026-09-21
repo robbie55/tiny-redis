@@ -15,3 +15,6 @@ CLAUDE.local.md
 
 # Wayfinder maps (planning scratch, same treatment as ROADMAP/TODO)
 .wayfinder/
+
+# Teaching workspace (scratch, same treatment as TODO/ROADMAP)
+.teach/
