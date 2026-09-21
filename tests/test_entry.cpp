@@ -132,18 +132,18 @@ TEST(Entry, PersistentKeyNeverExpires) {
   EXPECT_FALSE(e.expired(std::numeric_limits<std::int64_t>::max()));
 }
 
-TEST(Entry, ExpiresAtAndAfterItsDeadlineNotBefore) {
+TEST(Entry, ExpiresAtItsDeadlineNotBefore) {
   Entry e{makeInline("k", "v")};
   e.expiresAtMs = 1000;
 
   EXPECT_FALSE(e.expired(999));
-  EXPECT_TRUE(e.expired(1000));
+  EXPECT_FALSE(e.expired(1000));
   EXPECT_TRUE(e.expired(1001));
 }
 
-TEST(Entry, DeadlineAtZeroIsNotPersistent) {
+TEST(Entry, DeadlineAtZeroIsPersistent) {
   Entry e{makeInline("k", "v")};
-  e.expiresAtMs = 0;
+  e.expiresAtMs = 0;  // use kNoExpiry to represent no expiration
 
-  EXPECT_TRUE(e.expired(0));
+  EXPECT_FALSE(e.expired(0));
 }

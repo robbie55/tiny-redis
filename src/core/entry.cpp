@@ -11,7 +11,7 @@ namespace tinyredis {
     if (expiresAtMs == kNoExpiry) {
       return false;
     }
-    return now >= expiresAtMs;
+    return now > expiresAtMs;
   }
 
 }  // namespace tinyredis
