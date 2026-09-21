@@ -28,7 +28,7 @@ include(FetchContent)
 # benchmark targets and drag doctest into our build graph.
 FetchContent_Declare(pool_allocator
   GIT_REPOSITORY https://github.com/robbie55/pool-allocator.git
-  GIT_TAG        b2489fec35463fe942e08f439107aaa65b6ced77
+  GIT_TAG        v0.1.0  # 3da014fd7affe6d56fc80cb78ec50bb38823c7cc
   SOURCE_SUBDIR  header-only-no-cmake
 )
 FetchContent_MakeAvailable(pool_allocator)
