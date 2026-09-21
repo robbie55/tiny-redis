@@ -16,8 +16,9 @@ namespace tinyredis {
   // this is a hard cap on live keys.
   //
   // TODO(robbie): pick a number and know its cost, since slab bytes = capacity *
-  // sizeof(Entry). What must Store do when the pool runs out, and does the answer change
-  // with the LRU stretch?
+  // sizeof(Entry).
+  //
+  // maxKeys() is capped here, so a failed tryAllocate is a bug, not "full".
 #ifndef TINYREDIS_POOL_CAPACITY
 #define TINYREDIS_POOL_CAPACITY (1u << 18)
 #endif
@@ -33,6 +34,12 @@ namespace tinyredis {
   //
   // Every method takes `now` from the caller instead of reading the clock.
   // TODO(robbie): what does that buy? Two wins, one in the event loop and one in tests.
+  //
+  // LRU idle = uint32_t(clock - e.lruClock): unsigned wrap absorbs one ~49.7-day rollover.
+  // An expired entry picked by the eviction sampler counts as an expiry, not an eviction.
+  //
+  // TODO(robbie): declare per tickets 006-008: eviction policy + lruSamples{5} on Config,
+  // find(..., touch), evictions(), expiredKeys(), kKeepTtl{-2}, kMaxPasses{16}, cursor.
   class Store {
    public:
     struct Config {
@@ -50,14 +57,11 @@ namespace tinyredis {
     Store(Store&&) = delete;
     Store& operator=(Store&&) = delete;
 
-    // Returns nullptr when the key is absent or has expired. An expired entry is freed here
-    // (lazy expiry), as in every keyed method.
-    //
     // An Entry* from find, and the views from its key()/value(), are valid only until the
     // next call into this Store. Lookups free expired entries, so find and ttlMs count.
     Entry* find(std::string_view key, std::int64_t now);
 
-    // Returns false when the store cannot accept the key.
+    // False only under noeviction for a new key when full. Overwrites never need a slot.
     bool set(std::string_view key, std::string_view value, std::int64_t expireAtMs,
              std::int64_t now);
 
@@ -70,10 +74,9 @@ namespace tinyredis {
     // both sentinels, and TTL replies must match.
     std::int64_t ttlMs(std::string_view key, std::int64_t now);
 
-    // Reaps expired entries and returns how many.
-    // TODO(robbie): lazy expiry alone leaks keys nobody touches again, so the event loop
-    // runs this periodically and it must not stall the loop. How do you bound the work
-    // per call and still cover the whole table over time?
+    // Reaps expired entries and returns how many. sampleLimit is soft: a started chain is
+    // always finished, or the reverse-binary cursor loses its resize guarantee. The table
+    // never shrinks, because shrinking is what makes the cursor revisit keys.
     std::size_t activeExpireCycle(std::int64_t now, std::size_t sampleLimit = 20);
 
     void clear();

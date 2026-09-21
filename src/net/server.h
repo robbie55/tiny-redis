@@ -73,7 +73,7 @@ namespace tinyredis {
     std::unique_ptr<Acceptor> acceptor_;
     std::unordered_map<int, std::unique_ptr<Connection>> connections_;
     // TODO(robbie): connections pending destruction, the cached clock reading and its
-    // tick, and when the last expiry sweep ran.
+    // tick, and when the last expiry sweep ran (sweep every 100 ms).
   };
 
 }  // namespace tinyredis

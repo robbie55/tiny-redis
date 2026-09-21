@@ -24,6 +24,7 @@ namespace tinyredis {
   //     key's TTL, and is that what KEEPTTL does?
   //   - The caller passes `now`, so every command in a pipelined batch sees one
   //     timestamp. Convince yourself that's correct before relying on it.
+  //   - set false = full: reply "-OOM command not allowed when used memory > 'maxmemory'."
   //   - EXPIRE takes relative seconds, but Store wants an absolute deadline. Where does
   //     that conversion belong, and what does a negative TTL mean?
   //
