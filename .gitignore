@@ -12,3 +12,6 @@ CONTEXT.md
 CLAUDE.md
 CLAUDE.local.md
 .claude/
+
+# Wayfinder maps (planning scratch, same treatment as ROADMAP/TODO)
+.wayfinder/
