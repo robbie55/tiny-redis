@@ -1,6 +1,5 @@
 #include "core/store.h"
 
-#include "core/hash.h"
 #include "core/todo.h"
 
 namespace tinyredis {
@@ -33,7 +32,7 @@ namespace tinyredis {
     unimplemented("Store::ttlMs");
   }
 
-  std::size_t Store::activeExpireCycle(std::int64_t /*now*/, std::size_t /*sampleLimit*/) {
+  ExpireCycleResult Store::activeExpireCycle(std::int64_t /*now*/, std::size_t /*sampleLimit*/) {
     unimplemented("Store::activeExpireCycle");
   }
 
@@ -44,23 +43,5 @@ namespace tinyredis {
   std::size_t Store::bucketCount() const noexcept { unimplemented("Store::bucketCount"); }
 
   std::size_t Store::maxKeys() const noexcept { unimplemented("Store::maxKeys"); }
-
-  Entry* Store::allocEntry(std::string_view /*key*/, std::string_view /*value*/) {
-    unimplemented("Store::allocEntry");
-  }
-
-  void Store::freeEntry(Entry* /*e*/) noexcept { unimplemented("Store::freeEntry"); }
-
-  void Store::linkBucket(Entry* /*e*/) noexcept { unimplemented("Store::linkBucket"); }
-
-  void Store::unlinkBucket(Entry* /*e*/) noexcept { unimplemented("Store::unlinkBucket"); }
-
-  void Store::maybeGrow() { unimplemented("Store::maybeGrow"); }
-
-  void Store::rehash(std::size_t /*newBucketCount*/) { unimplemented("Store::rehash"); }
-
-  std::size_t Store::bucketOf(std::uint64_t /*h*/) const noexcept {
-    unimplemented("Store::bucketOf");
-  }
 
 }  // namespace tinyredis

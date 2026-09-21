@@ -4,7 +4,7 @@
 
 // TODO(robbie): the test names below are a coverage checklist, not a limit.
 // Pass `now` explicitly instead of sleeping, so these stay deterministic under ASan.
-// Each body fails on purpose so an unwritten test never reads as green.
+// Unwritten bodies GTEST_SKIP, and ctest counts a skip as a pass: check the skip count.
 
 TEST(Ttl, KeyIsVisibleBeforeItsDeadline) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
 
@@ -27,3 +27,21 @@ TEST(Ttl, ActiveExpireCycleReapsWithoutAnyAccess) {
 }
 
 TEST(Ttl, ActiveExpireCycleLeavesLiveKeysAlone) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
+
+TEST(Ttl, KeyIsLiveAtItsDeadline) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
+
+TEST(Ttl, PastDeadlineSetDeletesTheKey) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
+
+TEST(Ttl, KeepTtlPreservesTheDeadline) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
+
+TEST(Ttl, LazyExpiryCountsInExpiredKeys) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
+
+TEST(Ttl, ActiveExpireCycleStopsAtMaxPasses) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
+
+TEST(Ttl, ActiveExpireCycleStopsRepeatingAtTenPercent) {
+  GTEST_SKIP() << "TODO(robbie): not written yet";
+}
+
+TEST(Ttl, TableNeverShrinksAfterMassExpiry) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
+
+TEST(Ttl, ClearRestartsTheSweep) { GTEST_SKIP() << "TODO(robbie): not written yet"; }

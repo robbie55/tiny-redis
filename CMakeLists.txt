@@ -39,11 +39,13 @@ target_include_directories(pool_allocator_headers SYSTEM INTERFACE ${pool_alloca
 # ---- portable core (builds and is unit-tested on Linux and macOS alike) --------------
 
 add_library(tinyredis_core STATIC
+  src/core/bits.cpp
   src/core/buffer.cpp
   src/core/entry.cpp
   src/core/hash.cpp
   src/core/resp.cpp
   src/core/store.cpp
+  src/core/table.cpp
   src/core/command.cpp
 )
 target_include_directories(tinyredis_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -84,10 +86,13 @@ if(TINYREDIS_BUILD_TESTS AND BUILD_TESTING)
   FetchContent_MakeAvailable(googletest)
 
   add_executable(tinyredis_tests
+    tests/test_bits.cpp
     tests/test_buffer.cpp
     tests/test_entry.cpp
     tests/test_resp.cpp
     tests/test_store.cpp
+    tests/test_table.cpp
+    tests/test_evict.cpp
     tests/test_ttl.cpp
     tests/test_commands.cpp
   )
@@ -104,4 +109,9 @@ if(TINYREDIS_BUILD_BENCH AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/bench/bench_clie
   find_package(Threads REQUIRED)
   add_executable(tinyredis_bench bench/bench_client.cpp)
   target_link_libraries(tinyredis_bench PRIVATE tinyredis_core tinyredis_warnings Threads::Threads)
+endif()
+
+if(TINYREDIS_BUILD_BENCH)
+  add_executable(tinyredis_store_bench bench/store_bench.cpp)
+  target_link_libraries(tinyredis_store_bench PRIVATE tinyredis_core tinyredis_warnings)
 endif()
