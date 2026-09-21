@@ -85,6 +85,7 @@ if(TINYREDIS_BUILD_TESTS AND BUILD_TESTING)
 
   add_executable(tinyredis_tests
     tests/test_buffer.cpp
+    tests/test_entry.cpp
     tests/test_resp.cpp
     tests/test_store.cpp
     tests/test_ttl.cpp
