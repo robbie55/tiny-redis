@@ -30,7 +30,7 @@ namespace tinyredis {
   struct alignas(64) Entry {
    private:
     [[nodiscard]] std::string_view getBufData(uint32_t start, uint32_t size) const noexcept {
-      if (keyLen + valLen > kInlineCap) {
+      if (spilled()) {
         return {bufPtr + start, size};
       }
 
@@ -52,6 +52,8 @@ namespace tinyredis {
     };
 
     [[nodiscard]] std::string_view key() const noexcept;
+
+    [[nodiscard]] bool spilled() const noexcept { return keyLen + valLen > kInlineCap; }
 
     [[nodiscard]] std::string_view value() const noexcept;
 
