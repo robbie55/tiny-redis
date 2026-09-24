@@ -89,6 +89,7 @@ if(TINYREDIS_BUILD_TESTS AND BUILD_TESTING)
     tests/test_bits.cpp
     tests/test_buffer.cpp
     tests/test_entry.cpp
+    tests/test_hash.cpp
     tests/test_resp.cpp
     tests/test_store.cpp
     tests/test_table.cpp
