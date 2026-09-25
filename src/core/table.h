@@ -4,8 +4,11 @@
 #include <cstdint>
 #include <span>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 #include "PoolAllocator.h"
+#include "core/bits.h"
 #include "core/entry.h"
 #include "core/todo.h"
 
@@ -58,7 +61,7 @@ namespace tinyredis {
     // Visits every entry chained at `cursor`, then returns the reverse-binary next cursor;
     // 0 means a full cycle ended. `visit(Entry*)` may remove the entry it was handed.
     template <typename Visit>
-    std::size_t scanBucket(std::size_t cursor, Visit&& visit);
+    std::size_t scanBucket(std::size_t cursor, Visit visit);
 
     // dictGetSomeKeys walk: random start bucket, whole chains, stops at out.size() entries
     // or out.size() * 10 buckets. Returns entries written. Distinct, possibly expired.
@@ -71,14 +74,24 @@ namespace tinyredis {
    private:
     void maybeGrow();
     void rehash(std::size_t newBucketCount);
-    [[nodiscard]] std::size_t bucketOf(std::uint64_t h) const noexcept;
+    [[nodiscard]] std::size_t bucketOf(std::uint32_t h) const noexcept;
 
     // TODO(robbie): bucket array, pool, live count, hash seed.
+    std::vector<Entry*> buckets_;
+    EntryPool pool_;
+    std::size_t liveCount_{0};
+    std::uint64_t hashSeed_;
   };
 
   template <typename Visit>
-  std::size_t Table::scanBucket(std::size_t /*cursor*/, Visit&& /*visit*/) {
-    unimplemented("Table::scanBucket");
+  std::size_t Table::scanBucket(std::size_t cursor, Visit visit) {
+    const std::size_t mask{bucketCount() - 1};
+    for (Entry* e{buckets_[cursor & mask]}; e != nullptr;) {
+      Entry* next{e->next};  // visit may remove e
+      visit(e);
+      e = next;
+    }
+    return nextCursor(cursor, mask);
   }
 
 }  // namespace tinyredis
