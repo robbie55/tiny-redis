@@ -4,21 +4,16 @@
 #include <cstdint>
 #include <span>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 #include "PoolAllocator.h"
 #include "core/bits.h"
 #include "core/entry.h"
-#include "core/todo.h"
 
 namespace tinyredis {
 
   // Pool block count. PoolAllocator carves one aligned slab up front and never grows, so
   // this is a hard cap on live keys.
-  //
-  // TODO(robbie): pick a number and know its cost, since slab bytes = capacity *
-  // sizeof(Entry).
 #ifndef TINYREDIS_POOL_CAPACITY
 #define TINYREDIS_POOL_CAPACITY (1u << 18)
 #endif
@@ -76,7 +71,6 @@ namespace tinyredis {
     void rehash(std::size_t newBucketCount);
     [[nodiscard]] std::size_t bucketOf(std::uint32_t h) const noexcept;
 
-    // TODO(robbie): bucket array, pool, live count, hash seed.
     std::vector<Entry*> buckets_;
     EntryPool pool_;
     std::size_t liveCount_{0};

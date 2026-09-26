@@ -9,7 +9,6 @@
 #include "core/clock.h"
 #include "core/entry.h"
 #include "core/hash.h"
-#include "core/todo.h"
 
 namespace tinyredis {
 
