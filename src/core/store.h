@@ -2,28 +2,21 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <memory>
 #include <string_view>
-#include <vector>
 
-#include "core/clock.h"
 #include "core/entry.h"
 #include "core/table.h"
 
 namespace tinyredis {
 
   // Key/value policy over a Table: lazy expiry, eviction, the expire cycle, counters.
-  //
-  // Every method takes `now` from the caller instead of reading the clock.
-  // TODO(robbie): what does that buy? Two wins, one in the event loop and one in tests.
-  //
   // LRU idle = uint32_t(clock - e.lruClock): unsigned wrap absorbs one ~49.7-day rollover.
   // An expired entry picked by the eviction sampler counts as an expiry, not an eviction.
-  //
-  // TODO(robbie): declare per tickets 006-008: eviction policy + lruSamples{5} on Config,
-  // find(..., touch), evictions(), expiredKeys(), kKeepTtl{-2}, kMaxPasses{16}, cursor.
-  // TODO(robbie): one Config.seed derives both the hash seed and rng state (core/bits.h).
-  // maxKeys() == kPoolCapacity when Config.maxKeys is 0, asserted <= it otherwise.
+  inline constexpr std::size_t kMaxPasses{16};
+  inline constexpr std::int64_t kKeepTtl{-2};
+
+  enum class EvictionPolicy : std::uint8_t { kNoEviction, kAllKeysLru };
+
   struct ExpireCycleResult {
     std::size_t reaped;
     std::size_t passes;
@@ -32,9 +25,11 @@ namespace tinyredis {
   class Store {
    public:
     struct Config {
-      std::size_t initialBuckets{1024};  // rounded up to a power of two
-      std::size_t maxKeys{0};            // 0 -> bounded only by the pool capacity
-      std::uint64_t seed{0};             // 0 -> per-process random seed
+      std::size_t initialBuckets{1024};                    // rounded up to a power of two
+      std::size_t maxKeys{0};                              // 0 -> bounded only by the pool capacity
+      std::uint64_t seed{0};                               // 0 -> per-process random seed
+      std::uint32_t lruSamples{5};                         // 1...64, max-mem samples
+      EvictionPolicy policy{EvictionPolicy::kNoEviction};  // redis default
     };
 
     Store();
@@ -48,7 +43,8 @@ namespace tinyredis {
 
     // An Entry* from find, and the views from its key()/value(), are valid only until the
     // next call into this Store. Lookups free expired entries, so find and ttlMs count.
-    Entry* find(std::string_view key, std::int64_t now);
+    // touch=false for reads that aren't use (EXISTS)
+    Entry* find(std::string_view key, std::int64_t now, bool touch = true);
 
     // False only under noeviction for a new key when full. Overwrites never need a slot.
     bool set(std::string_view key, std::string_view value, std::int64_t expireAtMs,
@@ -72,9 +68,24 @@ namespace tinyredis {
     [[nodiscard]] std::size_t size() const noexcept;
     [[nodiscard]] std::size_t bucketCount() const noexcept;
     [[nodiscard]] std::size_t maxKeys() const noexcept;
+    [[nodiscard]] std::size_t evictions() const noexcept;
+    [[nodiscard]] std::size_t expiredKeys() const noexcept;
 
    private:
-    // TODO(robbie): Table, policy, lruSamples, rng state, expire cursor, counters.
+    Store(const Config& cfg, std::uint64_t seed);
+
+    Entry* lookup(std::string_view key, std::int64_t now);
+    void evictOne(std::int64_t now);
+
+    std::uint64_t rngState_;  // splitmix sample for Table::sampleSome
+    std::size_t maxKeys_;
+    std::size_t expireCursor_;  // reverse binary cursor
+    std::size_t evictions_;     // counter
+    std::size_t expiredKeys_;   // counter
+    std::uint32_t lruSamples_;  // from Config
+
+    Table table_;
+    EvictionPolicy policy_;
   };
 
 }  // namespace tinyredis
