@@ -146,7 +146,7 @@ namespace tinyredis {
   std::size_t Table::used() const noexcept { return size(); }
 
   void Table::maybeGrow() {
-    if (liveCount_ >= bucketCount()) {
+    if (liveCount_ > bucketCount()) {
       rehash(bucketCount() * 2);
     }
   }
