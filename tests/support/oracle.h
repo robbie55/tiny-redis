@@ -24,8 +24,7 @@ namespace tinyredis {
   // `evictions`. Victim lookup walks oldest-first until the first absent key: O(rank) per
   // eviction. That is sound only because nothing else removes keys, so no TTLs.
   // Aborts if Store and oracle disagree: a harness or Store bug, not a measurement.
-  template <class Gen>
-  OracleResult runOracle(Store& s, Gen& gen, std::size_t universe, std::size_t warmup,
+  OracleResult runOracle(Store& s, auto& gen, std::size_t universe, std::size_t warmup,
                          std::size_t evictions) {
     constexpr std::int64_t kAbsent{-1};
     std::vector<std::int64_t> lastUse(universe, kAbsent);
@@ -47,7 +46,9 @@ namespace tinyredis {
     }};
 
     for (std::size_t id{0}; id < s.maxKeys(); ++id, ++now) {
-      if (!s.set(key(id), "v", kNoExpiry, now)) fail("fill set failed");
+      if (!s.set(key(id), "v", kNoExpiry, now)) {
+        fail("fill set failed");
+      }
       use(id);
     }
 
@@ -60,7 +61,9 @@ namespace tinyredis {
         use(id);
         continue;
       }
-      if (!s.set(key(id), "v", kNoExpiry, now)) fail("set failed; policy not allkeys-lru?");
+      if (!s.set(key(id), "v", kNoExpiry, now)) {
+        fail("set failed; policy not allkeys-lru?");
+      }
 
       // touch=false: a touching probe would reorder the Store's LRU mid-measurement.
       std::size_t rank{0};
@@ -68,12 +71,16 @@ namespace tinyredis {
       for (; it != byRecency.end() && s.find(key(it->second), now, false) != nullptr; ++it) {
         ++rank;
       }
-      if (it == byRecency.end()) fail("no victim found");
+      if (it == byRecency.end()) {
+        fail("no victim found");
+      }
 
       if (evicted >= warmup) {
         const std::size_t n{byRecency.size()};
         r.percentiles.push_back(static_cast<double>(rank) / static_cast<double>(n));
-        if (rank * 5 >= n * 4) ++r.bad;
+        if (rank * 5 >= n * 4) {
+          ++r.bad;
+        }
       }
       lastUse[it->second] = kAbsent;
       byRecency.erase(it);
