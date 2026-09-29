@@ -201,7 +201,8 @@ namespace tinyredis {
   std::int64_t Store::ttlMs(std::string_view key, std::int64_t now) {
     Entry* found{lookup(key, now)};
     if (found == nullptr) {
-      return kKeepTtl;
+      constexpr std::int64_t kTtlMissing{-2};
+      return kTtlMissing;
     }
 
     if (found->expiresAtMs == kNoExpiry) {
