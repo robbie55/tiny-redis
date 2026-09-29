@@ -9,6 +9,7 @@
 #include "core/entry.h"
 #include "core/store.h"
 #include "core/table.h"
+#include "support/kv.h"
 
 // Seed Store::Config with a fixed value so bucket layout is the same every run.
 // Entry* dies at the next Store call, so read key()/value() before calling again.
@@ -20,14 +21,13 @@ using tinyredis::kInlineCap;
 using tinyredis::kNoExpiry;
 using tinyredis::kPoolCapacity;
 using tinyredis::Store;
+using tinyredis::key;
+using tinyredis::val;
 
 namespace {
 
   constexpr std::uint64_t kSeed{0x5eed'1234'abcd'0002ULL};
   constexpr std::int64_t kNow{1'000};
-
-  std::string key(std::size_t i) { return "key:" + std::to_string(i); }
-  std::string val(std::size_t i) { return "val:" + std::to_string(i); }
 
   bool put(Store& s, std::string_view k, std::string_view v) {
     return s.set(k, v, kNoExpiry, kNow);

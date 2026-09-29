@@ -7,12 +7,14 @@
 #include "core/clock.h"
 #include "core/entry.h"
 #include "core/store.h"
+#include "support/kv.h"
 
 using tinyredis::Entry;
 using tinyredis::kKeepTtl;
 using tinyredis::kMaxPasses;
 using tinyredis::kNoExpiry;
 using tinyredis::Store;
+using tinyredis::key;
 
 namespace {
 
@@ -22,8 +24,6 @@ namespace {
   constexpr std::int64_t kLater{kNow + 100};
   // Large enough that one pass runs until the cursor wraps: a full sweep in one call.
   constexpr std::size_t kSweepAll{1'000'000};
-
-  std::string key(std::size_t i) { return "key:" + std::to_string(i); }
 
   // Sets keys [from, to) expiring at expireAtMs, each one expected to succeed.
   void fill(Store& s, std::size_t from, std::size_t to, std::int64_t expireAtMs) {

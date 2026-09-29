@@ -53,6 +53,11 @@ target_link_libraries(tinyredis_core
   PUBLIC  pool_allocator_headers
   PRIVATE tinyredis_warnings)
 
+# Header-only helpers shared by tests and benches (workload generators); never linked
+# into the server. Consumers link tinyredis_core themselves (zipf.h uses core/bits.h).
+add_library(tinyredis_test_support INTERFACE)
+target_include_directories(tinyredis_test_support INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
 # ---- Linux-only networking layer ------------------------------------------------------
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -98,7 +103,7 @@ if(TINYREDIS_BUILD_TESTS AND BUILD_TESTING)
     tests/test_commands.cpp
   )
   target_link_libraries(tinyredis_tests
-    PRIVATE tinyredis_core tinyredis_warnings GTest::gtest_main)
+    PRIVATE tinyredis_core tinyredis_test_support tinyredis_warnings GTest::gtest_main)
 
   include(GoogleTest)
   gtest_discover_tests(tinyredis_tests)
@@ -114,5 +119,6 @@ endif()
 
 if(TINYREDIS_BUILD_BENCH)
   add_executable(tinyredis_store_bench bench/store_bench.cpp)
-  target_link_libraries(tinyredis_store_bench PRIVATE tinyredis_core tinyredis_warnings)
+  target_link_libraries(tinyredis_store_bench
+    PRIVATE tinyredis_core tinyredis_test_support tinyredis_warnings)
 endif()

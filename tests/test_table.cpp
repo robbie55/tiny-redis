@@ -12,6 +12,7 @@
 
 #include "core/entry.h"
 #include "core/table.h"
+#include "support/kv.h"
 
 // Seed with a fixed value; assert behavior, never bucket layout.
 // Spill-leak checks need LSan, which only runs in the Linux container.
@@ -19,13 +20,12 @@
 using tinyredis::Entry;
 using tinyredis::kInlineCap;
 using tinyredis::Table;
+using tinyredis::key;
+using tinyredis::val;
 
 namespace {
 
   constexpr std::uint64_t kSeed{0x5eed'1234'abcd'0001ULL};
-
-  std::string key(std::size_t i) { return "key:" + std::to_string(i); }
-  std::string val(std::size_t i) { return "val:" + std::to_string(i); }
 
   // Inserts keys [from, to) with their matching values.
   void fill(Table& t, std::size_t from, std::size_t to) {
