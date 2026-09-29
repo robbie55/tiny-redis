@@ -2,15 +2,13 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <set>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "core/clock.h"
 #include "core/entry.h"
 #include "core/store.h"
 #include "support/kv.h"
+#include "support/oracle.h"
 #include "support/zipf.h"
 
 // Seed with a fixed value; assert behavior, never bucket layout.
@@ -18,6 +16,7 @@
 using tinyredis::Entry;
 using tinyredis::EvictionPolicy;
 using tinyredis::kNoExpiry;
+using tinyredis::runOracle;
 using tinyredis::Store;
 using tinyredis::Zipf;
 using tinyredis::key;
@@ -143,53 +142,8 @@ TEST(Evict, BadEvictionRateStaysWithinTwentyPercent) {
 
   Store s{capped(kKeys, EvictionPolicy::kAllKeysLru)};
   Zipf zipf{kUniverse, 0.99, kSeed};
-
-  constexpr std::int64_t kAbsent{-1};
-  std::vector<std::int64_t> lastUse(kUniverse, kAbsent);
-  std::set<std::pair<std::int64_t, std::size_t>> byRecency;  // oldest first
-
-  std::int64_t now{kNow};
-  const auto use{[&](std::size_t id) {
-    if (lastUse[id] != kAbsent) {
-      byRecency.erase({lastUse[id], id});
-    }
-    lastUse[id] = now;
-    byRecency.insert({now, id});
-  }};
-
-  for (std::size_t id{0}; id < kKeys; ++id, ++now) {
-    ASSERT_TRUE(s.set(key(id), "v", kNoExpiry, now));
-    use(id);
-  }
-
-  std::size_t evicted{0};
-  std::size_t bad{0};
-  while (evicted < kEvictions) {
-    ++now;
-    const std::size_t id{zipf.next()};
-    if (s.find(key(id), now) != nullptr) {
-      use(id);
-      continue;
-    }
-
-    ASSERT_TRUE(s.set(key(id), "v", kNoExpiry, now));
-    // Every older key is still present, so the first miss from the oldest end is the
-    // victim and its position is its recency rank.
-    std::size_t rank{0};
-    auto it{byRecency.begin()};
-    for (; it != byRecency.end() && present(s, it->second, now); ++it) {
-      ++rank;
-    }
-    ASSERT_NE(it, byRecency.end()) << "no victim found";
-    if (rank * 5 >= byRecency.size() * 4) {
-      ++bad;
-    }
-    lastUse[it->second] = kAbsent;
-    byRecency.erase(it);
-    use(id);
-    ++evicted;
-  }
+  const auto r{runOracle(s, zipf, kUniverse, 0, kEvictions)};
 
   EXPECT_EQ(s.evictions(), kEvictions);
-  EXPECT_LE(bad * 5, kEvictions) << bad << " of " << kEvictions << " evictions were bad";
+  EXPECT_LE(r.bad * 5, kEvictions) << r.bad << " of " << kEvictions << " evictions were bad";
 }
