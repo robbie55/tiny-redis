@@ -18,9 +18,9 @@
 // Spill-leak checks need LSan, which only runs in the Linux container.
 
 using tinyredis::Entry;
+using tinyredis::key;
 using tinyredis::kInlineCap;
 using tinyredis::Table;
-using tinyredis::key;
 using tinyredis::val;
 
 namespace {

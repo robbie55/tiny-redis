@@ -17,11 +17,11 @@
 using namespace std::string_view_literals;
 
 using tinyredis::Entry;
+using tinyredis::key;
 using tinyredis::kInlineCap;
 using tinyredis::kNoExpiry;
 using tinyredis::kPoolCapacity;
 using tinyredis::Store;
-using tinyredis::key;
 using tinyredis::val;
 
 namespace {

@@ -29,21 +29,20 @@ TEST(Hash, SipHash13MatchesReferenceVectors) {
     std::uint64_t want;
   };
   constexpr Case kCases[]{
-      {1, 0x68a914128e01e473ULL},  {7, 0x2f098ab0c751325aULL},  {8, 0xead411e67ebe2eeaULL},
-      {9, 0x75927f9d95124362ULL},  {15, 0xf30eb725bb91c9eaULL}, {16, 0x8972188433a5c5b7ULL},
-      {24, 0x31185a47af932f3aULL}, {63, 0x385d3e39e5f37359ULL},
+      {.len = 1, .want = 0x68A914128E01E473ULL},  {.len = 7, .want = 0x2F098AB0C751325AULL},
+      {.len = 8, .want = 0xEAD411E67EBE2EEAULL},  {.len = 9, .want = 0x75927F9D95124362ULL},
+      {.len = 15, .want = 0xF30EB725BB91C9EAULL}, {.len = 16, .want = 0x8972188433A5C5B7ULL},
+      {.len = 24, .want = 0x31185A47AF932F3AULL}, {.len = 63, .want = 0x385D3E39E5F37359ULL},
   };
   for (const auto& c : kCases) {
     const std::string m{ramp(c.len)};
     EXPECT_EQ(sipHash13(m.data(), m.size(), 0, 0), c.want) << "len " << c.len;
   }
   const std::string key{"user:1000:session"};
-  EXPECT_EQ(sipHash13(key.data(), key.size(), 0, 0), 0xf3aee0b115fa8cb6ULL);
+  EXPECT_EQ(sipHash13(key.data(), key.size(), 0, 0), 0xF3AEE0B115FA8CB6ULL);
 }
 
-TEST(Hash, EmptyInputIsWellDefined) {
-  EXPECT_EQ(hashBytes(nullptr, 0, 42), hashBytes("", 0, 42));
-}
+TEST(Hash, EmptyInputIsWellDefined) { EXPECT_EQ(hashBytes(nullptr, 0, 42), hashBytes("", 0, 42)); }
 
 // The length byte in the final block is what separates these.
 TEST(Hash, TrailingZeroBytesChangeTheHash) {

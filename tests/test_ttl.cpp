@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
 
 #include "core/clock.h"
 #include "core/entry.h"
@@ -10,11 +9,11 @@
 #include "support/kv.h"
 
 using tinyredis::Entry;
+using tinyredis::key;
 using tinyredis::kKeepTtl;
 using tinyredis::kMaxPasses;
 using tinyredis::kNoExpiry;
 using tinyredis::Store;
-using tinyredis::key;
 
 namespace {
 

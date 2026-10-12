@@ -15,11 +15,11 @@
 
 using tinyredis::Entry;
 using tinyredis::EvictionPolicy;
+using tinyredis::key;
 using tinyredis::kNoExpiry;
 using tinyredis::runOracle;
 using tinyredis::Store;
 using tinyredis::Zipf;
-using tinyredis::key;
 
 namespace {
 
