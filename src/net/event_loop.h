@@ -52,8 +52,7 @@ namespace tinyredis {
     void remove(IoHandler& h) noexcept;
 
     // Runs until stop(). `onTick` fires after each batch of events and on every timeout.
-    // TODO(robbie): this drives the periodic TTL sweep. What does that mean for the
-    // epoll_wait timeout when there's no traffic at all?
+    // timeoutMs bounds the TTL sweep interval on an idle server.
     void run(int timeoutMs, const std::function<void()>& onTick);
 
     void stop() noexcept;

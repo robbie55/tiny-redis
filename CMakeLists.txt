@@ -28,7 +28,7 @@ include(FetchContent)
 # benchmark targets and drag doctest into our build graph.
 FetchContent_Declare(pool_allocator
   GIT_REPOSITORY https://github.com/robbie55/pool-allocator.git
-  GIT_TAG        b2489fec35463fe942e08f439107aaa65b6ced77
+  GIT_TAG        v0.1.0  # 3da014fd7affe6d56fc80cb78ec50bb38823c7cc
   SOURCE_SUBDIR  header-only-no-cmake
 )
 FetchContent_MakeAvailable(pool_allocator)
@@ -39,17 +39,24 @@ target_include_directories(pool_allocator_headers SYSTEM INTERFACE ${pool_alloca
 # ---- portable core (builds and is unit-tested on Linux and macOS alike) --------------
 
 add_library(tinyredis_core STATIC
+  src/core/bits.cpp
   src/core/buffer.cpp
   src/core/entry.cpp
   src/core/hash.cpp
   src/core/resp.cpp
   src/core/store.cpp
+  src/core/table.cpp
   src/core/command.cpp
 )
 target_include_directories(tinyredis_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(tinyredis_core
   PUBLIC  pool_allocator_headers
   PRIVATE tinyredis_warnings)
+
+# Header-only helpers shared by tests and benches (workload generators); never linked
+# into the server. Consumers link tinyredis_core themselves (zipf.h uses core/bits.h).
+add_library(tinyredis_test_support INTERFACE)
+target_include_directories(tinyredis_test_support INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 # ---- Linux-only networking layer ------------------------------------------------------
 
@@ -84,14 +91,19 @@ if(TINYREDIS_BUILD_TESTS AND BUILD_TESTING)
   FetchContent_MakeAvailable(googletest)
 
   add_executable(tinyredis_tests
+    tests/test_bits.cpp
     tests/test_buffer.cpp
+    tests/test_entry.cpp
+    tests/test_hash.cpp
     tests/test_resp.cpp
     tests/test_store.cpp
+    tests/test_table.cpp
+    tests/test_evict.cpp
     tests/test_ttl.cpp
     tests/test_commands.cpp
   )
   target_link_libraries(tinyredis_tests
-    PRIVATE tinyredis_core tinyredis_warnings GTest::gtest_main)
+    PRIVATE tinyredis_core tinyredis_test_support tinyredis_warnings GTest::gtest_main)
 
   include(GoogleTest)
   gtest_discover_tests(tinyredis_tests)
@@ -103,4 +115,10 @@ if(TINYREDIS_BUILD_BENCH AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/bench/bench_clie
   find_package(Threads REQUIRED)
   add_executable(tinyredis_bench bench/bench_client.cpp)
   target_link_libraries(tinyredis_bench PRIVATE tinyredis_core tinyredis_warnings Threads::Threads)
+endif()
+
+if(TINYREDIS_BUILD_BENCH)
+  add_executable(tinyredis_store_bench bench/store_bench.cpp)
+  target_link_libraries(tinyredis_store_bench
+    PRIVATE tinyredis_core tinyredis_test_support tinyredis_warnings)
 endif()

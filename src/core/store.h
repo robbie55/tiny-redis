@@ -2,43 +2,34 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <memory>
 #include <string_view>
-#include <vector>
 
-#include "PoolAllocator.h"
-#include "core/clock.h"
 #include "core/entry.h"
+#include "core/table.h"
 
 namespace tinyredis {
 
-  // Pool block count. PoolAllocator carves one aligned slab up front and never grows, so
-  // this is a hard cap on live keys.
-  //
-  // TODO(robbie): pick a number and know its cost, since slab bytes = capacity *
-  // sizeof(Entry). What must Store do when the pool runs out, and does the answer change
-  // with the LRU stretch?
-#ifndef TINYREDIS_POOL_CAPACITY
-#define TINYREDIS_POOL_CAPACITY (1u << 18)
-#endif
-  inline constexpr std::size_t kPoolCapacity{TINYREDIS_POOL_CAPACITY};
+  // Key/value policy over a Table: lazy expiry, eviction, the expire cycle, counters.
+  // LRU idle = uint32_t(clock - e.lruClock): unsigned wrap absorbs one ~49.7-day rollover.
+  // An expired entry picked by the eviction sampler counts as an expiry, not an eviction.
+  inline constexpr std::size_t kMaxPasses{16};
+  inline constexpr std::int64_t kKeepTtl{-2};
 
-  using EntryPool = PoolAllocator<Entry, kPoolCapacity>;
+  enum class EvictionPolicy : std::uint8_t { kNoEviction, kAllKeysLru };
 
-  // The key/value table.
-  //
-  // TODO(robbie): open addressing or chaining? Write down why before picking. To narrow
-  // it, ask which parts of this codebase hold an Entry* across calls, and what that
-  // forbids a rehash from doing.
-  //
-  // Every method takes `now` from the caller instead of reading the clock.
-  // TODO(robbie): what does that buy? Two wins, one in the event loop and one in tests.
+  struct ExpireCycleResult {
+    std::size_t reaped;
+    std::size_t passes;
+  };
+
   class Store {
    public:
     struct Config {
-      std::size_t initialBuckets{1024};
-      std::size_t maxKeys{0};  // 0 -> bounded only by the pool capacity
-      std::uint64_t seed{0};   // 0 -> per-process random seed
+      std::size_t initialBuckets{1024};                    // rounded up to a power of two
+      std::size_t maxKeys{0};                              // 0 -> bounded only by the pool capacity
+      std::uint64_t seed{0};                               // 0 -> per-process random seed
+      std::uint32_t lruSamples{5};                         // 1...64, max-mem samples
+      EvictionPolicy policy{EvictionPolicy::kNoEviction};  // redis default
     };
 
     Store();
@@ -50,11 +41,12 @@ namespace tinyredis {
     Store(Store&&) = delete;
     Store& operator=(Store&&) = delete;
 
-    // Returns nullptr when the key is absent or has expired.
-    // TODO(robbie): what happens to an entry you find expired? That's lazy expiry.
-    Entry* find(std::string_view key, std::int64_t now);
+    // An Entry* from find, and the views from its key()/value(), are valid only until the
+    // next call into this Store. Lookups free expired entries, so find and ttlMs count.
+    // touch=false for reads that aren't use (EXISTS)
+    Entry* find(std::string_view key, std::int64_t now, bool touch = true);
 
-    // Returns false when the store cannot accept the key.
+    // False only under noeviction for a new key when full. Overwrites never need a slot.
     bool set(std::string_view key, std::string_view value, std::int64_t expireAtMs,
              std::int64_t now);
 
@@ -67,32 +59,33 @@ namespace tinyredis {
     // both sentinels, and TTL replies must match.
     std::int64_t ttlMs(std::string_view key, std::int64_t now);
 
-    // Reaps expired entries and returns how many.
-    // TODO(robbie): lazy expiry alone leaks keys nobody touches again, so the event loop
-    // runs this periodically and it must not stall the loop. How do you bound the work
-    // per call and still cover the whole table over time?
-    std::size_t activeExpireCycle(std::int64_t now, std::size_t sampleLimit = 20);
+    // sampleLimit is soft: a started chain is always finished, or the reverse-binary
+    // cursor loses its resize guarantee. passes is capped at kMaxPasses.
+    ExpireCycleResult activeExpireCycle(std::int64_t now, std::size_t sampleLimit = 20);
 
     void clear();
 
     [[nodiscard]] std::size_t size() const noexcept;
     [[nodiscard]] std::size_t bucketCount() const noexcept;
     [[nodiscard]] std::size_t maxKeys() const noexcept;
+    [[nodiscard]] std::size_t evictions() const noexcept;
+    [[nodiscard]] std::size_t expiredKeys() const noexcept;
 
    private:
-    // TODO(robbie): a suggested split, not a requirement. Add, remove or rename freely.
-    Entry* allocEntry(std::string_view key, std::string_view value);
-    void freeEntry(Entry* e) noexcept;
+    Store(const Config& cfg, std::uint64_t seed);
 
-    void linkBucket(Entry* e) noexcept;
-    void unlinkBucket(Entry* e) noexcept;
+    Entry* lookup(std::string_view key, std::int64_t now);
+    void evictOne(std::int64_t now);
 
-    void maybeGrow();
-    void rehash(std::size_t newBucketCount);
-    [[nodiscard]] std::size_t bucketOf(std::uint64_t h) const noexcept;
+    std::uint64_t rngState_;  // splitmix sample for Table::sampleSome
+    std::size_t maxKeys_;
+    std::size_t expireCursor_;  // reverse binary cursor
+    std::size_t evictions_;     // counter
+    std::size_t expiredKeys_;   // counter
+    std::uint32_t lruSamples_;  // from Config
 
-    // TODO(robbie): table state. Bucket array, pool, live count, key cap, hash seed, and
-    // whatever else the design needs.
+    Table table_;
+    EvictionPolicy policy_;
   };
 
 }  // namespace tinyredis
