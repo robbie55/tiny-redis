@@ -286,7 +286,7 @@ namespace tinyredis {
 
   namespace reply {
     void simpleString(Buffer& out, std::string_view s) {
-      assert(s.find(" \t"));
+      assert(s.find_first_of("\r\n") == std::string_view::npos);
       appendLine(out, '+', s);
     }
 
