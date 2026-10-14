@@ -1,12 +1,52 @@
 #include <gtest/gtest.h>
 
+#include <initializer_list>
+
 #include "core/command.h"
+#include "core/resp.h"
+#include "core/store.h"
 
-// TODO(robbie): the test names below are a coverage checklist, not a limit.
-// Assert on the exact wire bytes. That catches RESP framing mistakes redis-cli would hide.
-// Each body fails on purpose so an unwritten test never reads as green.
+using tinyredis::Buffer;
+using tinyredis::Command;
+using tinyredis::DispatchResult;
+using tinyredis::Store;
 
-TEST(Commands, Ping) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
+namespace {
+  constexpr std::uint64_t kSeed{0x5eed'1234'abcd'0004ULL};
+  constexpr std::int64_t kNow{1'000'000};
+
+  class Harness {
+   public:
+    Harness(Store::Config cfg = {.seed = kSeed}) : store_{cfg} {}
+
+    std::string run(std::initializer_list<std::string_view> args, std::int64_t now = kNow) {
+      return fullRun(args, now).first;
+    }
+
+    std::pair<std::string, DispatchResult> fullRun(std::initializer_list<std::string_view> args,
+                                                   std::int64_t now) {
+      std::vector<std::string> owned{args.begin(), args.end()};
+
+      Command cmd{};
+
+      for (const std::string& arg : owned) {
+        cmd.argv[cmd.argc++] = arg;
+      }
+      Buffer out{};
+      const DispatchResult res{tinyredis::dispatch(store_, cmd, now, out)};
+
+      return {std::string{out.readable()}, res};
+    }
+
+   private:
+    Store store_;
+  };
+}  // namespace
+
+TEST(Commands, Ping) {
+  Harness h{};
+  EXPECT_EQ(h.run({"PING"}), "+PONG\r\n");
+}
 
 TEST(Commands, SetAndGet) { GTEST_SKIP() << "TODO(robbie): not written yet"; }
 
