@@ -7,7 +7,6 @@
 
 #include "core/command.h"
 #include "core/resp.h"
-#include "core/todo.h"
 #include "net/server.h"
 
 namespace tinyredis {
