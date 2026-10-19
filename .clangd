@@ -19,16 +19,12 @@ Diagnostics:
       - cppcoreguidelines-pro-type-member-init
 
 ---
-# epoll does not exist on macOS, so src/net and main.cpp cannot be analyzed on this host.
-# <sys/epoll.h> fails, clang then skips the rest of the file's includes, core/todo.h never
-# loads, and `unimplemented` reads as undeclared everywhere it is called. That is one root
-# cause presenting as 11 errors.
-#
-# Scoped to these paths deliberately: a genuine typo in an include anywhere else still
-# shows up as an error. The real fix for src/net is to edit it on the Linux box.
+# epoll is Linux-only. Analyze src/net and main.cpp as Linux against headers copied out of
+# the dev container (`./scripts/dev.sh sysroot`). These files are absent from the macOS
+# compile DB, so clangd borrows a src/core command; strip its Darwin-only flags.
+# --sysroot is relative to that command's directory, build/debug.
 If:
   PathMatch: [src/net/.*, src/main\.cpp]
-Diagnostics:
-  Suppress:
-    - pp_file_not_found
-    - ovl_no_viable_function_in_call
+CompileFlags:
+  Add: [--target=aarch64-linux-gnu, --sysroot=../../.cache/linux-sysroot]
+  Remove: [-arch, arm64, -isysroot*, -mmacosx-version-min*]
