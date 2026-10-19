@@ -105,6 +105,11 @@ if(TINYREDIS_BUILD_TESTS AND BUILD_TESTING)
   target_link_libraries(tinyredis_tests
     PRIVATE tinyredis_core tinyredis_test_support tinyredis_warnings GTest::gtest_main)
 
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_sources(tinyredis_tests PRIVATE tests/test_event_loop.cpp)
+    target_link_libraries(tinyredis_tests PRIVATE tinyredis_net)
+  endif()
+
   include(GoogleTest)
   gtest_discover_tests(tinyredis_tests)
 endif()

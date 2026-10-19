@@ -24,7 +24,7 @@ Diagnostics:
 # compile DB, so clangd borrows a src/core command; strip its Darwin-only flags.
 # --sysroot is relative to that command's directory, build/debug.
 If:
-  PathMatch: [src/net/.*, src/main\.cpp]
+  PathMatch: [src/net/.*, src/main\.cpp, tests/.*]
 CompileFlags:
   Add: [--target=aarch64-linux-gnu, --sysroot=../../.cache/linux-sysroot]
   Remove: [-arch, arm64, -isysroot*, -mmacosx-version-min*]
