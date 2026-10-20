@@ -13,7 +13,11 @@ namespace tinyredis {
 
   Connection::Connection(int fd, Server& server)
       : IoHandler{fd}, server_{server}, state_{ConnectionState::kOpen}, interest_{EPOLLIN} {
-    server_.loop().add(*this, interest_);
+    try {
+      server_.loop().add(*this, interest_);
+    } catch (...) {
+      ::close(fd_);
+    }
   }
 
   Connection::~Connection() {
