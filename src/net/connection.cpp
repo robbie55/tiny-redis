@@ -8,16 +8,16 @@
 #include "core/command.h"
 #include "core/resp.h"
 #include "net/server.h"
+#include "net/unique_fd.h"
 
 namespace tinyredis {
 
   Connection::Connection(int fd, Server& server)
-      : IoHandler{fd}, server_{server}, state_{ConnectionState::kOpen}, interest_{EPOLLIN} {
-    try {
-      server_.loop().add(*this, interest_);
-    } catch (...) {
-      throw;
-    }
+      : IoHandler{UniqueFd{fd}},
+        server_{server},
+        state_{ConnectionState::kOpen},
+        interest_{EPOLLIN} {
+    server_.loop().add(*this, interest_);
   }
 
   Connection::~Connection() { server_.loop().remove(*this); }

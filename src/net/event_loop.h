@@ -25,7 +25,7 @@ namespace tinyredis {
     [[nodiscard]] int fd() const noexcept { return fd_.get(); }
 
    protected:
-    explicit IoHandler(int fd) noexcept : fd_{fd} {}
+    explicit IoHandler(UniqueFd fd) noexcept : fd_{std::move(fd)} {}
     UniqueFd fd_;
   };
 
