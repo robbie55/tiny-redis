@@ -62,6 +62,7 @@ target_include_directories(tinyredis_test_support INTERFACE ${CMAKE_CURRENT_SOUR
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_library(tinyredis_net STATIC
+    src/net/unique_fd.cpp
     src/net/event_loop.cpp
     src/net/connection.cpp
     src/net/server.cpp
