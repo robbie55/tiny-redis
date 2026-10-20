@@ -32,6 +32,8 @@ namespace tinyredis {
 
   EventLoop::~EventLoop() { close(epollFd_); }
 
+  // epollCtl/remove intentionally non-const: they mutate kernel epoll state via epollFd_.
+  // NOLINTNEXTLINE(readability-make-member-function-const)
   void EventLoop::epollCtl(IoHandler& h, int flag, epoll_event event, const char* msg) {
     const int ctl{epoll_ctl(epollFd_, flag, h.fd(), &event)};
 
@@ -50,6 +52,7 @@ namespace tinyredis {
              "EventLoop::modify -> Failed to modify with epoll_ctl");
   }
 
+  // NOLINTNEXTLINE(readability-make-member-function-const)
   void EventLoop::remove(IoHandler& h) noexcept {
     [[maybe_unused]] const int ctl{epoll_ctl(epollFd_, EPOLL_CTL_DEL, h.fd(), nullptr)};
 

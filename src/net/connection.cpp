@@ -16,18 +16,15 @@ namespace tinyredis {
     try {
       server_.loop().add(*this, interest_);
     } catch (...) {
-      ::close(fd_);
+      throw;
     }
   }
 
-  Connection::~Connection() {
-    server_.loop().remove(*this);
-    ::close(fd_);
-  }
+  Connection::~Connection() { server_.loop().remove(*this); }
 
   void Connection::onReadable() {
     in_.ensureWritable(Buffer::kDefaultCapacity);
-    const ssize_t ready{::read(fd_, in_.writePtr(), in_.writableBytes())};
+    const ssize_t ready{::read(fd_.get(), in_.writePtr(), in_.writableBytes())};
     if (ready > 0) {
       in_.commit(static_cast<std::size_t>(ready));
       processInput();
@@ -91,7 +88,7 @@ namespace tinyredis {
 
   void Connection::flushOutput() {
     while (!out_.empty()) {
-      const ssize_t written{::write(fd_, out_.readable().data(), out_.readable().size())};
+      const ssize_t written{::write(fd_.get(), out_.readable().data(), out_.readable().size())};
       if (written > 0) {
         out_.consume(static_cast<std::size_t>(written));
         continue;

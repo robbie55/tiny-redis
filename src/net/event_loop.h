@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <functional>
 
+#include "net/unique_fd.h"
+
 namespace tinyredis {
 
   // Anything the loop can wake up on, meaning the listening socket and every client socket.
@@ -20,11 +22,11 @@ namespace tinyredis {
     virtual void onReadable() = 0;
     virtual void onWritable() = 0;
 
-    [[nodiscard]] int fd() const noexcept { return fd_; }
+    [[nodiscard]] int fd() const noexcept { return fd_.get(); }
 
    protected:
-    explicit IoHandler(int fd) noexcept : fd_(fd) {}
-    int fd_;
+    explicit IoHandler(int fd) noexcept : fd_{fd} {}
+    UniqueFd fd_;
   };
 
   // The epoll loop. One thread owns every socket and the whole store
