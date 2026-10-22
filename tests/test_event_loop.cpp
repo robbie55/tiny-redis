@@ -7,12 +7,14 @@
 #include <cerrno>
 #include <functional>
 #include <system_error>
+#include <utility>
 
 #include "net/event_loop.h"
 #include "net/unique_fd.h"
 
 using tinyredis::EventLoop;
 using tinyredis::IoHandler;
+using tinyredis::UniqueFd;
 
 namespace {
   constexpr int kTimeoutMs{10};
@@ -24,45 +26,29 @@ namespace {
       if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0, fds.data()) == -1) {
         throw std::system_error(errno, std::generic_category(), "socketpair");
       }
-      local_ = fds[0];
-      peer_ = fds[1];
+      local_.reset(fds[0]);
+      peer_.reset(fds[1]);
     }
 
-    ~SocketPair() {
-      closeFd(local_);
-      closeFd(peer_);
-    }
-
-    SocketPair(const SocketPair&) = delete;
-    SocketPair& operator=(const SocketPair&) = delete;
-    SocketPair(SocketPair&&) = delete;
-    SocketPair& operator=(SocketPair&&) = delete;
-
-    [[nodiscard]] int local() const noexcept { return local_; }
+    // The handler under test owns the local end, so it is handed over rather than shared.
+    [[nodiscard]] UniqueFd takeLocal() noexcept { return UniqueFd{local_.release()}; }
 
     void send() const {
       constexpr char kByte{'x'};
-      ASSERT_EQ(::write(peer_, &kByte, 1), 1);
+      ASSERT_EQ(::write(peer_.get(), &kByte, 1), 1);
     }
 
-    void closePeer() noexcept { closeFd(peer_); }
+    void closePeer() noexcept { peer_.reset(); }
 
    private:
-    static void closeFd(int& fd) noexcept {
-      if (fd != -1) {
-        ::close(fd);
-        fd = -1;
-      }
-    }
-
-    int local_{-1};
-    int peer_{-1};
+    UniqueFd local_{-1};
+    UniqueFd peer_{-1};
   };
 
   class Probe final : public IoHandler {
    public:
-    explicit Probe(int fd, bool drain = true) noexcept
-        : IoHandler(tinyredis::UniqueFd{fd}), drain_(drain) {}
+    explicit Probe(UniqueFd fd, bool drain = true) noexcept
+        : IoHandler(std::move(fd)), drain_(drain) {}
 
     void onReadable() override {
       ++reads;
@@ -111,9 +97,9 @@ namespace {
 }  // namespace
 
 TEST(EventLoop, ReadableFiresOnData) {
-  const SocketPair sp;
+  SocketPair sp;
   EventLoop loop;
-  Probe p{sp.local()};
+  Probe p{sp.takeLocal()};
 
   loop.add(p, EPOLLIN);
   sp.send();
@@ -124,9 +110,9 @@ TEST(EventLoop, ReadableFiresOnData) {
 }
 
 TEST(EventLoop, WritableFiresOnFreshSocket) {
-  const SocketPair sp;
+  SocketPair sp;
   EventLoop loop;
-  Probe p{sp.local()};
+  Probe p{sp.takeLocal()};
 
   loop.add(p, EPOLLOUT);
   runTicks(loop, 1);
@@ -136,9 +122,9 @@ TEST(EventLoop, WritableFiresOnFreshSocket) {
 }
 
 TEST(EventLoop, IdleSocketNeverFires) {
-  const SocketPair sp;
+  SocketPair sp;
   EventLoop loop;
-  Probe p{sp.local()};
+  Probe p{sp.takeLocal()};
 
   loop.add(p, EPOLLIN);
   runTicks(loop, 3);
@@ -155,9 +141,9 @@ TEST(EventLoop, TimeoutStillTicks) {
 }
 
 TEST(EventLoop, ModifySwapsInterest) {
-  const SocketPair sp;
+  SocketPair sp;
   EventLoop loop;
-  Probe p{sp.local()};
+  Probe p{sp.takeLocal()};
 
   loop.add(p, EPOLLIN);
   loop.modify(p, EPOLLOUT);
@@ -169,9 +155,9 @@ TEST(EventLoop, ModifySwapsInterest) {
 }
 
 TEST(EventLoop, RemovedHandlerNeverFires) {
-  const SocketPair sp;
+  SocketPair sp;
   EventLoop loop;
-  Probe p{sp.local()};
+  Probe p{sp.takeLocal()};
 
   loop.add(p, EPOLLIN);
   sp.send();
@@ -182,9 +168,9 @@ TEST(EventLoop, RemovedHandlerNeverFires) {
 }
 
 TEST(EventLoop, AddTwiceThrows) {
-  const SocketPair sp;
+  SocketPair sp;
   EventLoop loop;
-  Probe p{sp.local()};
+  Probe p{sp.takeLocal()};
 
   loop.add(p, EPOLLIN);
 
@@ -192,21 +178,21 @@ TEST(EventLoop, AddTwiceThrows) {
 }
 
 TEST(EventLoop, ModifyUnregisteredThrows) {
-  const SocketPair sp;
+  SocketPair sp;
   EventLoop loop;
-  Probe p{sp.local()};
+  Probe p{sp.takeLocal()};
 
   EXPECT_THROW(loop.modify(p, EPOLLIN), std::system_error);
 }
 
 TEST(EventLoop, OneTickPerBatch) {
-  const SocketPair a;
-  const SocketPair b;
-  const SocketPair c;
+  SocketPair a;
+  SocketPair b;
+  SocketPair c;
   EventLoop loop;
-  Probe pa{a.local()};
-  Probe pb{b.local()};
-  Probe pc{c.local()};
+  Probe pa{a.takeLocal()};
+  Probe pb{b.takeLocal()};
+  Probe pc{c.takeLocal()};
 
   loop.add(pa, EPOLLIN);
   loop.add(pb, EPOLLIN);
@@ -223,9 +209,9 @@ TEST(EventLoop, OneTickPerBatch) {
 }
 
 TEST(EventLoop, UndrainedSocketFiresAgain) {
-  const SocketPair sp;
+  SocketPair sp;
   EventLoop loop;
-  Probe p{sp.local(), false};
+  Probe p{sp.takeLocal(), false};
 
   loop.add(p, EPOLLIN);
   sp.send();
@@ -237,7 +223,7 @@ TEST(EventLoop, UndrainedSocketFiresAgain) {
 TEST(EventLoop, PeerCloseIsReadable) {
   SocketPair sp;
   EventLoop loop;
-  Probe p{sp.local()};
+  Probe p{sp.takeLocal()};
 
   loop.add(p, EPOLLIN);
   sp.closePeer();
@@ -248,11 +234,11 @@ TEST(EventLoop, PeerCloseIsReadable) {
 }
 
 TEST(EventLoop, StopFinishesBatch) {
-  const SocketPair a;
-  const SocketPair b;
+  SocketPair a;
+  SocketPair b;
   EventLoop loop;
-  Probe pa{a.local()};
-  Probe pb{b.local()};
+  Probe pa{a.takeLocal()};
+  Probe pb{b.takeLocal()};
   pa.onRead = [&] { loop.stop(); };
   pb.onRead = [&] { loop.stop(); };
 
