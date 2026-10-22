@@ -6,7 +6,7 @@
 
 namespace tinyredis {
   UniqueFd::~UniqueFd() {
-    if (fd_ >= 0) {
+    if (fd_ == -1) {
       return;
     }
 
@@ -32,7 +32,7 @@ namespace tinyredis {
       return;
     }
 
-    if (fd_ >= 0) {
+    if (fd_ != -1) {
       ::close(fd_);
     }
 

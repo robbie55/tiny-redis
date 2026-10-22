@@ -9,6 +9,7 @@
 #include <system_error>
 
 #include "net/event_loop.h"
+#include "net/unique_fd.h"
 
 using tinyredis::EventLoop;
 using tinyredis::IoHandler;
@@ -60,7 +61,8 @@ namespace {
 
   class Probe final : public IoHandler {
    public:
-    explicit Probe(int fd, bool drain = true) noexcept : IoHandler(fd), drain_(drain) {}
+    explicit Probe(int fd, bool drain = true) noexcept
+        : IoHandler(tinyredis::UniqueFd{fd}), drain_(drain) {}
 
     void onReadable() override {
       ++reads;

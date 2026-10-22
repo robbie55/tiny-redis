@@ -4,6 +4,7 @@
 
 #include "core/buffer.h"
 #include "net/event_loop.h"
+#include "net/unique_fd.h"
 
 namespace tinyredis {
 
@@ -15,7 +16,7 @@ namespace tinyredis {
   // by write(2).
   class Connection final : public IoHandler {
    public:
-    Connection(int fd, Server& server);
+    Connection(UniqueFd fd, Server& server);
     ~Connection() override;
 
     Connection(const Connection&) = delete;

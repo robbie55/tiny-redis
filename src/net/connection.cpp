@@ -12,8 +12,8 @@
 
 namespace tinyredis {
 
-  Connection::Connection(int fd, Server& server)
-      : IoHandler{UniqueFd{fd}},
+  Connection::Connection(UniqueFd fd, Server& server)
+      : IoHandler{std::move(fd)},
         server_{server},
         state_{ConnectionState::kOpen},
         interest_{EPOLLIN} {
