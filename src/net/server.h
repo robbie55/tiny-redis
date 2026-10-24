@@ -24,11 +24,13 @@ namespace tinyredis {
       Store::Config store{};
     };
 
-    explicit Server(const Config& cfg);
-    ~Server();
+    explicit Server(Config cfg);
+    ~Server() = default;
 
     Server(const Server&) = delete;
     Server& operator=(const Server&) = delete;
+    Server(Server&&) = delete;
+    Server& operator=(Server&&) = delete;
 
     void run();
     void stop() noexcept;
@@ -36,14 +38,8 @@ namespace tinyredis {
     Store& store() noexcept;
     EventLoop& loop() noexcept;
 
-    // TODO(robbie): read the clock once per event-loop iteration and share it across the
-    // batch. Cache it against the loop's tick counter.
     std::int64_t now() noexcept;
 
-    // Called by a Connection that is finished.
-    // TODO(robbie): you can't delete it here. epoll_wait can report a socket readable and
-    // writable in one return, and the second callback would run on a freed object. When
-    // is it safe to destroy?
     void retire(Connection& c);
 
     [[nodiscard]] std::size_t connectionCount() const noexcept;
@@ -52,18 +48,21 @@ namespace tinyredis {
     // The listening socket's handler.
     class Acceptor final : public IoHandler {
      public:
-      Acceptor(int fd, Server& server) noexcept;
+      Acceptor(const Config& cfg, Server& server);
+      ~Acceptor() override;
+
+      Acceptor(const Acceptor&) = delete;
+      Acceptor& operator=(const Acceptor&) = delete;
+      Acceptor(Acceptor&&) = delete;
+      Acceptor& operator=(Acceptor&&) = delete;
+
       void onReadable() override;
       void onWritable() override;
 
      private:
-      [[maybe_unused]] Server& server_;
+      Server& server_;
     };
 
-    // TODO(robbie): one accept() per wakeup is a bug under edge-triggered epoll, and a
-    // throughput problem in any mode when 50 clients connect at once. Drain it. Also, what
-    // does SO_REUSEADDR fix, and what does leaving TCP_NODELAY off the accepted socket do
-    // to latency measurements?
     void acceptPending();
     void reapRetired();
 
@@ -72,8 +71,11 @@ namespace tinyredis {
     EventLoop loop_;
     std::unique_ptr<Acceptor> acceptor_;
     std::unordered_map<int, std::unique_ptr<Connection>> connections_;
-    // TODO(robbie): connections pending destruction, the cached clock reading and its
-    // tick, and when the last expiry sweep ran (sweep every 100 ms).
+    std::vector<std::unique_ptr<Connection>> retired_;
+
+    std::int64_t cachedNow_;
+    std::int64_t lastSweepMs_;
+    std::uint64_t cachedTick_;
   };
 
 }  // namespace tinyredis
