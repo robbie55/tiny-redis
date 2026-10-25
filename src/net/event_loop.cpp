@@ -28,6 +28,8 @@ namespace tinyredis {
     }
 
     epollFd_ = epfd;
+
+    static_assert(std::atomic<bool>::is_always_lock_free, "Must be lock free for signals");
   }
 
   EventLoop::~EventLoop() { close(epollFd_); }
@@ -60,7 +62,7 @@ namespace tinyredis {
   }
 
   void EventLoop::run(int timeoutMs, const std::function<void()>& onTick) {
-    running_ = true;
+    running_.store(true);
 
     while (running_) {
       const int eventsReady{
@@ -94,7 +96,7 @@ namespace tinyredis {
     }
   }
 
-  void EventLoop::stop() noexcept { running_ = false; }
+  void EventLoop::stop() noexcept { running_.store(false); }
 
   std::uint64_t EventLoop::tick() const noexcept { return tickCount_; }
 

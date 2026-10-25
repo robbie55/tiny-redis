@@ -3,6 +3,8 @@
 #include <sys/epoll.h>
 
 #include <array>
+#include <atomic>
+#include <csignal>
 #include <cstdint>
 #include <functional>
 
@@ -58,7 +60,7 @@ namespace tinyredis {
     std::array<epoll_event, 1024> events_{};
     int epollFd_{-1};
     std::uint64_t tickCount_{};
-    bool running_{};
+    std::atomic<bool> running_{false};
 
     void epollCtl(IoHandler& h, int flag, epoll_event event, const char* msg);
   };
