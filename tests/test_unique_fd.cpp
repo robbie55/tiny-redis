@@ -23,16 +23,20 @@ namespace {
   }
 
   bool isOpen(int fd) {
+    // clang-format off
     struct stat st{};
+    // clang-format on : clang 18 has an issue with this struct decl
     return ::fstat(fd, &st) == 0;
   }
 }  // namespace
 
 TEST(UniqueFd, DestructorCloses) {
   const int raw{openFd()};
+  // clang-format off
   {
     const UniqueFd fd{raw};
   }
+  // clang-format on : Once again, clang 18 wants to collapse this to one line, don't like it
 
   EXPECT_FALSE(isOpen(raw));
 }
