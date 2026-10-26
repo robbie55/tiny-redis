@@ -19,7 +19,7 @@ namespace {
 
 namespace tinyredis {
 
-  EventLoop::EventLoop() {
+  EventLoop::EventLoop() : epollFd_{-1} {
     const int epfd{epoll_create1(EPOLL_CLOEXEC)};
 
     if (epfd == -1) {
@@ -27,17 +27,17 @@ namespace tinyredis {
                               "EventLoop::EventLoop -> Failed to create an epfd");
     }
 
-    epollFd_ = epfd;
+    epollFd_.reset(epfd);
 
     static_assert(std::atomic<bool>::is_always_lock_free, "Must be lock free for signals");
   }
 
-  EventLoop::~EventLoop() { close(epollFd_); }
+  EventLoop::~EventLoop() = default;
 
   // epollCtl/remove intentionally non-const: they mutate kernel epoll state via epollFd_.
   // NOLINTNEXTLINE(readability-make-member-function-const)
   void EventLoop::epollCtl(IoHandler& h, int flag, epoll_event event, const char* msg) {
-    const int ctl{epoll_ctl(epollFd_, flag, h.fd(), &event)};
+    const int ctl{epoll_ctl(epollFd_.get(), flag, h.fd(), &event)};
 
     if (ctl == -1) {
       throw std::system_error(errno, std::generic_category(), msg);
@@ -56,7 +56,7 @@ namespace tinyredis {
 
   // NOLINTNEXTLINE(readability-make-member-function-const)
   void EventLoop::remove(IoHandler& h) noexcept {
-    [[maybe_unused]] const int ctl{epoll_ctl(epollFd_, EPOLL_CTL_DEL, h.fd(), nullptr)};
+    [[maybe_unused]] const int ctl{epoll_ctl(epollFd_.get(), EPOLL_CTL_DEL, h.fd(), nullptr)};
 
     assert(ctl != -1 && "EventLoop::remove -> assert caught ctl == -1");
   }
@@ -66,7 +66,7 @@ namespace tinyredis {
 
     while (running_) {
       const int eventsReady{
-          epoll_wait(epollFd_, events_.data(), static_cast<int>(events_.size()), timeoutMs)};
+          epoll_wait(epollFd_.get(), events_.data(), static_cast<int>(events_.size()), timeoutMs)};
 
       // interrupted by a signal; recheck running_
       if (eventsReady == -1 && errno == EINTR) {

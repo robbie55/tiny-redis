@@ -5,6 +5,7 @@
 #include <array>
 #include <atomic>
 #include <csignal>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 
@@ -57,8 +58,10 @@ namespace tinyredis {
     [[nodiscard]] std::uint64_t tick() const noexcept;
 
    private:
-    std::array<epoll_event, 1024> events_{};
-    int epollFd_{-1};
+    static constexpr std::size_t kMaxEvents{1024};
+
+    std::array<epoll_event, kMaxEvents> events_{};
+    UniqueFd epollFd_;
     std::uint64_t tickCount_{};
     std::atomic<bool> running_{false};
 
