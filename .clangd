@@ -1,30 +1,4 @@
 CompileFlags:
     CompilationDatabase: "build/debug"
-
-# .clang-tidy stays authoritative, WarningsAsErrors:'*' and all — that is the CI contract.
-# This file only changes what the EDITOR surfaces, which is option (2) in the
-# "Editor-vs-CI tension" note in .clang-tidy.
-Diagnostics:
-  ClangTidy:
-    # SCAFFOLD-ONLY. Every check below fires because the bodies in src/ are currently
-    # `unimplemented()` stubs, not because anything is wrong with the design:
-    #   - a stub never touches `this`, so all 52 methods "could be static"
-    #   - a stub destructor "could be defaulted"
-    #   - a stub constructor initializes no members
-    # All three are checks worth keeping. Delete this Remove: block once src/ is
-    # implemented, and let them run for real.
-    Remove:
-      - readability-convert-member-functions-to-static
-      - performance-trivially-destructible
-      - cppcoreguidelines-pro-type-member-init
-
----
-# epoll is Linux-only. Analyze src/net and main.cpp as Linux against headers copied out of
-# the dev container (`./scripts/dev.sh sysroot`). These files are absent from the macOS
-# compile DB, so clangd borrows a src/core command; strip its Darwin-only flags.
-# --sysroot is relative to that command's directory, build/debug.
-If:
-  PathMatch: [src/net/.*, src/main\.cpp, tests/.*]
-CompileFlags:
-  Add: [--target=aarch64-linux-gnu, --sysroot=../../.cache/linux-sysroot]
-  Remove: [-arch, arm64, -isysroot*, -mmacosx-version-min*]
+    Add: [--target=aarch64-linux-gnu, --sysroot=../../.cache/linux-sysroot]
+    Remove: [-arch, arm64, -isysroot*, -mmacosx-version-min*]
