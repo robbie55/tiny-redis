@@ -20,42 +20,43 @@
 #include "net/event_loop.h"
 #include "net/unique_fd.h"
 
+namespace {
+  using tinyredis::Server;
+  using tinyredis::UniqueFd;
+
+  [[noreturn]] void throwSys(const char* msg) {
+    throw std::system_error(errno, std::generic_category(), msg);
+  }
+
+  UniqueFd openListener(const Server::Config& cfg) {
+    sockaddr_in addr{};
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(cfg.port);
+    if (inet_pton(AF_INET, cfg.bindAddr.c_str(), &addr.sin_addr) != 1) {
+      throw std::invalid_argument("Server -> invalid bind address: " + cfg.bindAddr);
+    }
+
+    UniqueFd fd{::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0)};
+    if (fd.get() == -1) {
+      throwSys("Server -> failed to create socket");
+    }
+
+    const int reuse{1};
+    if (::setsockopt(fd.get(), SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1) {
+      throwSys("Server -> failed to set SO_REUSEADDR");
+    }
+    if (::bind(fd.get(), reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) == -1) {
+      throwSys("Server -> failed to bind");
+    }
+    if (::listen(fd.get(), cfg.backlog) == -1) {
+      throwSys("Server -> failed to listen");
+    }
+
+    return fd;
+  }
+}  // namespace
+
 namespace tinyredis {
-
-  namespace {
-
-    [[noreturn]] void throwSys(const char* msg) {
-      throw std::system_error(errno, std::generic_category(), msg);
-    }
-
-    UniqueFd openListener(const Server::Config& cfg) {
-      sockaddr_in addr{};
-      addr.sin_family = AF_INET;
-      addr.sin_port = htons(cfg.port);
-      if (inet_pton(AF_INET, cfg.bindAddr.c_str(), &addr.sin_addr) != 1) {
-        throw std::invalid_argument("Server -> invalid bind address: " + cfg.bindAddr);
-      }
-
-      UniqueFd fd{::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0)};
-      if (fd.get() == -1) {
-        throwSys("Server -> failed to create socket");
-      }
-
-      const int reuse{1};
-      if (::setsockopt(fd.get(), SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1) {
-        throwSys("Server -> failed to set SO_REUSEADDR");
-      }
-      if (::bind(fd.get(), reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) == -1) {
-        throwSys("Server -> failed to bind");
-      }
-      if (::listen(fd.get(), cfg.backlog) == -1) {
-        throwSys("Server -> failed to listen");
-      }
-
-      return fd;
-    }
-
-  }  // namespace
 
   Server::Acceptor::Acceptor(const Config& cfg, Server& server)
       : IoHandler{openListener(cfg)}, server_{server} {
