@@ -62,6 +62,7 @@ target_include_directories(tinyredis_test_support INTERFACE ${CMAKE_CURRENT_SOUR
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_library(tinyredis_net STATIC
+    src/net/unique_fd.cpp
     src/net/event_loop.cpp
     src/net/connection.cpp
     src/net/server.cpp
@@ -104,6 +105,12 @@ if(TINYREDIS_BUILD_TESTS AND BUILD_TESTING)
   )
   target_link_libraries(tinyredis_tests
     PRIVATE tinyredis_core tinyredis_test_support tinyredis_warnings GTest::gtest_main)
+
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_sources(tinyredis_tests PRIVATE tests/test_event_loop.cpp tests/test_unique_fd.cpp
+      tests/test_server.cpp)
+    target_link_libraries(tinyredis_tests PRIVATE tinyredis_net)
+  endif()
 
   include(GoogleTest)
   gtest_discover_tests(tinyredis_tests)

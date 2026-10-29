@@ -2,9 +2,14 @@
 
 #include <sys/epoll.h>
 
+#include <array>
+#include <atomic>
+#include <csignal>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <vector>
+
+#include "net/unique_fd.h"
 
 namespace tinyredis {
 
@@ -20,25 +25,15 @@ namespace tinyredis {
     virtual void onReadable() = 0;
     virtual void onWritable() = 0;
 
-    [[nodiscard]] int fd() const noexcept { return fd_; }
+    [[nodiscard]] int fd() const noexcept { return fd_.get(); }
 
    protected:
-    explicit IoHandler(int fd) noexcept : fd_(fd) {}
-    int fd_;
+    explicit IoHandler(UniqueFd fd) noexcept : fd_{std::move(fd)} {}
+    UniqueFd fd_;
   };
 
-  // The epoll loop. One thread owns every socket and the whole store, which is why
-  // nothing in core/ needs a lock.
-  //
-  // TODO(robbie): level-triggered or edge-triggered? Everything else follows from this.
-  //   - Level-triggered: epoll keeps reporting a fd while data remains. Forgiving.
-  //   - Edge-triggered (EPOLLET): reported once per readiness transition. Every handler
-  //     must drain its fd until read() returns EAGAIN, or it hangs holding unread bytes.
-  // Work out what each costs in epoll_wait round trips per pipelined batch, pick one, and
-  // write the choice down. The connection code has to agree with it.
-  //
-  // TODO(robbie): sockets must be non-blocking. Which syscalls set that, and why does
-  // accept4() exist when accept() plus fcntl() does the same job?
+  // The epoll loop. One thread owns every socket and the whole store
+  // Level triggered
   class EventLoop {
    public:
     EventLoop();
@@ -46,6 +41,8 @@ namespace tinyredis {
 
     EventLoop(const EventLoop&) = delete;
     EventLoop& operator=(const EventLoop&) = delete;
+    EventLoop(EventLoop&&) = delete;
+    EventLoop& operator=(EventLoop&&) = delete;
 
     void add(IoHandler& h, std::uint32_t events);
     void modify(IoHandler& h, std::uint32_t events);
@@ -58,14 +55,16 @@ namespace tinyredis {
     void stop() noexcept;
 
     // Incremented once per epoll_wait return.
-    // TODO(robbie): Server uses this to read the clock once per iteration instead of once
-    // per command. Why does that matter when one wakeup carries hundreds of commands?
     [[nodiscard]] std::uint64_t tick() const noexcept;
 
    private:
-    // TODO(robbie): the epoll fd, a running flag, the tick counter, and the event array
-    // for epoll_wait. How big should that array be, and what happens when more fds are
-    // ready than it holds?
-  };
+    static constexpr std::size_t kMaxEvents{1024};
 
+    std::array<epoll_event, kMaxEvents> events_{};
+    UniqueFd epollFd_;
+    std::uint64_t tickCount_{};
+    std::atomic<bool> running_{false};
+
+    void epollCtl(IoHandler& h, int flag, epoll_event event, const char* msg);
+  };
 }  // namespace tinyredis

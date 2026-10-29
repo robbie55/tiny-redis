@@ -10,6 +10,7 @@
 #   ./scripts/dev.sh hw                 capture host/toolchain facts -> docs/hardware.txt
 #   ./scripts/dev.sh fmt [--fix]        clang-format, same check CI runs
 #   ./scripts/dev.sh tidy [preset]      clang-tidy over the compile database
+#   ./scripts/dev.sh sysroot            copy Linux headers out for host clangd (src/net)
 #   ./scripts/dev.sh shell              interactive shell in the container
 #   ./scripts/dev.sh down | clean       stop container | stop and drop build volume
 #
@@ -132,6 +133,20 @@ cmd_fmt() {
   fi
 }
 
+# Copies the container's headers out so host clangd can analyze src/net (see .clangd).
+# Re-run after changing the base image.
+cmd_sysroot() {
+  up
+  local out=.cache/linux-sysroot triple ver
+  triple="$(dex gcc -dumpmachine | tr -d '\r')"
+  ver="$(dex gcc -dumpversion | tr -d '\r')"
+  rm -rf "$out" && mkdir -p "$out"
+  # crtbegin.o is only there so clang's GCC detection finds the libstdc++ install.
+  dex tar -C / -cf - usr/include "usr/lib/gcc/$triple/$ver/include" "usr/lib/gcc/$triple/$ver/crtbegin.o" \
+    | tar -C "$out" -xf -
+  echo "wrote $out ($triple, gcc $ver)"
+}
+
 cmd_tidy() {
   local preset; preset="$(preset_or_default "${1:-}")"
   cmd_build "$preset"
@@ -148,6 +163,7 @@ case "${1:-}" in
   hw)      shift; cmd_hw ;;
   fmt)     shift; cmd_fmt "$@" ;;
   tidy)    shift; cmd_tidy "$@" ;;
+  sysroot) shift; cmd_sysroot ;;
   shell)   shift; up; dex bash ;;
   down)    shift; "${DC[@]}" down ;;
   clean)   shift; "${DC[@]}" down -v ;;

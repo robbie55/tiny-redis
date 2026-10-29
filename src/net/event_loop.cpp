@@ -1,29 +1,103 @@
 #include "net/event_loop.h"
 
-#include "core/todo.h"
+#include <sys/epoll.h>
+#include <unistd.h>
+
+#include <cassert>
+#include <cerrno>
+#include <system_error>
+
+namespace {
+  epoll_event buildEpollEvent(tinyredis::IoHandler& h, std::uint32_t events) {
+    epoll_event event{};
+    event.events = events;
+    event.data.ptr = &h;
+
+    return event;
+  }
+}  // namespace
 
 namespace tinyredis {
 
-  EventLoop::EventLoop() { unimplemented("EventLoop::EventLoop"); }
+  EventLoop::EventLoop() : epollFd_{-1} {
+    const int epfd{epoll_create1(EPOLL_CLOEXEC)};
+
+    if (epfd == -1) {
+      throw std::system_error(errno, std::generic_category(),
+                              "EventLoop::EventLoop -> Failed to create an epfd");
+    }
+
+    epollFd_.reset(epfd);
+
+    static_assert(std::atomic<bool>::is_always_lock_free, "Must be lock free for signals");
+  }
 
   EventLoop::~EventLoop() = default;
 
-  void EventLoop::add(IoHandler& /*h*/, std::uint32_t /*events*/) {
-    unimplemented("EventLoop::add");
+  // epollCtl/remove intentionally non-const: they mutate kernel epoll state via epollFd_.
+  // NOLINTNEXTLINE(readability-make-member-function-const)
+  void EventLoop::epollCtl(IoHandler& h, int flag, epoll_event event, const char* msg) {
+    const int ctl{epoll_ctl(epollFd_.get(), flag, h.fd(), &event)};
+
+    if (ctl == -1) {
+      throw std::system_error(errno, std::generic_category(), msg);
+    }
   }
 
-  void EventLoop::modify(IoHandler& /*h*/, std::uint32_t /*events*/) {
-    unimplemented("EventLoop::modify");
+  void EventLoop::add(IoHandler& h, std::uint32_t events) {
+    epollCtl(h, EPOLL_CTL_ADD, buildEpollEvent(h, events),
+             "EventLoop::add -> Failed to add with epoll_ctl");
   }
 
-  void EventLoop::remove(IoHandler& /*h*/) noexcept { unimplemented("EventLoop::remove"); }
-
-  void EventLoop::run(int /*timeoutMs*/, const std::function<void()>& /*onTick*/) {
-    unimplemented("EventLoop::run");
+  void EventLoop::modify(IoHandler& h, std::uint32_t events) {
+    epollCtl(h, EPOLL_CTL_MOD, buildEpollEvent(h, events),
+             "EventLoop::modify -> Failed to modify with epoll_ctl");
   }
 
-  void EventLoop::stop() noexcept { unimplemented("EventLoop::stop"); }
+  // NOLINTNEXTLINE(readability-make-member-function-const)
+  void EventLoop::remove(IoHandler& h) noexcept {
+    [[maybe_unused]] const int ctl{epoll_ctl(epollFd_.get(), EPOLL_CTL_DEL, h.fd(), nullptr)};
 
-  std::uint64_t EventLoop::tick() const noexcept { unimplemented("EventLoop::tick"); }
+    assert(ctl != -1 && "EventLoop::remove -> assert caught ctl == -1");
+  }
+
+  void EventLoop::run(int timeoutMs, const std::function<void()>& onTick) {
+    running_.store(true);
+
+    while (running_) {
+      const int eventsReady{
+          epoll_wait(epollFd_.get(), events_.data(), static_cast<int>(events_.size()), timeoutMs)};
+
+      // interrupted by a signal; recheck running_
+      if (eventsReady == -1 && errno == EINTR) {
+        continue;
+      }
+      if (eventsReady == -1) {
+        throw std::system_error(errno, std::generic_category(),
+                                "EventLoop::run -> Failed to run epoll_wait");
+      }
+
+      tickCount_ += 1;
+
+      // eventsReady ≤ events_.size(), never negative here
+      for (std::size_t i{}; i < static_cast<std::size_t>(eventsReady); ++i) {
+        epoll_event event{events_[i]};
+        IoHandler* io{static_cast<IoHandler*>(event.data.ptr)};
+
+        if ((event.events & (EPOLLIN | EPOLLERR | EPOLLHUP)) != 0) {
+          io->onReadable();
+        }
+
+        if ((event.events & EPOLLOUT) != 0) {
+          io->onWritable();
+        }
+      }
+      onTick();
+    }
+  }
+
+  void EventLoop::stop() noexcept { running_.store(false); }
+
+  std::uint64_t EventLoop::tick() const noexcept { return tickCount_; }
 
 }  // namespace tinyredis
