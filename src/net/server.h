@@ -9,6 +9,7 @@
 #include "core/store.h"
 #include "net/connection.h"
 #include "net/event_loop.h"
+#include "net/unique_fd.h"
 
 namespace tinyredis {
 
@@ -65,6 +66,10 @@ namespace tinyredis {
 
     void acceptPending();
     void reapRetired();
+    bool handleAcceptFailure(int err);
+    bool shedPending();
+    void pauseAccepting(int err);
+    void resumeAccepting();
 
     Config cfg_;
     Store store_;
@@ -76,6 +81,10 @@ namespace tinyredis {
     std::int64_t cachedNow_;
     std::int64_t lastSweepMs_;
     std::uint64_t cachedTick_;
+
+    // Held so an fd can be freed on demand when the process or system runs out.
+    UniqueFd reserveFd_;
+    bool acceptPaused_{false};
   };
 
 }  // namespace tinyredis

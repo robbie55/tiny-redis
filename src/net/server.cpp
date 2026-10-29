@@ -1,6 +1,7 @@
 #include "net/server.h"
 
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
@@ -23,6 +24,46 @@
 namespace {
   using tinyredis::Server;
   using tinyredis::UniqueFd;
+
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): open(2) is variadic, no alternative
+  UniqueFd openReserve() { return UniqueFd{::open("/dev/null", O_RDONLY | O_CLOEXEC)}; }
+
+  enum class AcceptFailure : std::uint8_t { kDrained, kRetry, kShed, kPause };
+
+  // Retry only errors that consumed the queued connection. One that didn't stays queued,
+  // and retrying it spins. Pause is the default because a wrong guess costs one tick.
+  AcceptFailure classifyAcceptErrno(int err) noexcept {
+    switch (err) {
+      case EAGAIN:  // == EWOULDBLOCK on Linux
+        return AcceptFailure::kDrained;
+      case EINTR:
+      case ECONNABORTED:
+      case EPERM:
+      // accept(2): pending network errors on the new socket, retry like EAGAIN
+      case EPROTO:
+      case ENOPROTOOPT:
+      case ENETDOWN:
+      case ENETUNREACH:
+      case ENONET:     // NOLINT(misc-include-cleaner): <cerrno> provides it via asm-generic
+      case EHOSTDOWN:  // NOLINT(misc-include-cleaner)
+      case EHOSTUNREACH:
+      case EOPNOTSUPP:
+      case ETIMEDOUT:
+        return AcceptFailure::kRetry;
+      case EMFILE:
+      case ENFILE:
+        return AcceptFailure::kShed;
+      // Listener misuse: a bug, not a runtime condition. Release pauses instead of spinning.
+      case EBADF:
+      case ENOTSOCK:
+      case EINVAL:
+      case EFAULT:
+        assert(false && "classifyAcceptErrno -> accept4 on a broken listener");
+        return AcceptFailure::kPause;
+      default:
+        return AcceptFailure::kPause;
+    }
+  }
 
   [[noreturn]] void throwSys(const char* msg) {
     throw std::system_error(errno, std::generic_category(), msg);
@@ -75,11 +116,13 @@ namespace tinyredis {
         acceptor_{std::make_unique<Acceptor>(cfg_, *this)},
         cachedNow_{},
         lastSweepMs_{},
-        cachedTick_{std::numeric_limits<std::uint64_t>::max()} {}
+        cachedTick_{std::numeric_limits<std::uint64_t>::max()},
+        reserveFd_{openReserve()} {}
 
   void Server::run() {
     loop_.run(cfg_.expireIntervalMs, [this] {
       reapRetired();
+      resumeAccepting();
       const auto tNow{now()};
       if (tNow - lastSweepMs_ >= cfg_.expireIntervalMs) {
         store_.activeExpireCycle(tNow);
@@ -126,12 +169,11 @@ namespace tinyredis {
       UniqueFd pendingFd{
           ::accept4(acceptor_->fd(), nullptr, nullptr, SOCK_NONBLOCK | SOCK_CLOEXEC)};
 
-      if (!pendingFd && (errno == ECONNABORTED || errno == EINTR)) {
-        continue;
-      }
-
       if (!pendingFd) {
-        break;
+        if (handleAcceptFailure(errno)) {
+          continue;
+        }
+        return;
       }
 
       const int opt{1};
@@ -149,5 +191,71 @@ namespace tinyredis {
   }
 
   void Server::reapRetired() { retired_.clear(); }
+
+  // Returns whether acceptPending should keep accepting.
+  bool Server::handleAcceptFailure(int err) {
+    switch (classifyAcceptErrno(err)) {
+      case AcceptFailure::kDrained:
+        return false;
+      case AcceptFailure::kRetry:
+        return true;
+      case AcceptFailure::kShed:
+        if (shedPending()) {
+          return true;
+        }
+        break;
+      case AcceptFailure::kPause:
+        break;
+    }
+
+    pauseAccepting(err);
+    return false;
+  }
+
+  // Out of fds, accept4 leaves the connection queued and LT re-fires at once: a busy
+  // loop. Spend the reserve to accept and close it, so the peer gets a FIN, not a hang.
+  bool Server::shedPending() {
+    if (!reserveFd_) {
+      return false;
+    }
+
+    reserveFd_.reset();
+    UniqueFd shed{::accept4(acceptor_->fd(), nullptr, nullptr, SOCK_CLOEXEC)};
+    // ENFILE is system-wide: another process can take the slot just freed.
+
+    const bool validShed{static_cast<bool>(shed)};
+    shed.reset();
+
+    // open reserve after clearing out shed
+    reserveFd_ = openReserve();
+
+    return validShed;
+  }
+
+  // Stop asking epoll about the listener; peers wait in the backlog until a tick resumes.
+  void Server::pauseAccepting(int err) {
+    if (acceptPaused_) {
+      return;
+    }
+
+    loop_.modify(*acceptor_, 0);
+    acceptPaused_ = true;
+    std::cerr << "Server::acceptPending -> accept paused: " << std::generic_category().message(err)
+              << '\n';
+  }
+
+  void Server::resumeAccepting() {
+    if (!acceptPaused_) {
+      return;
+    }
+
+    reserveFd_ = openReserve();
+    if (!reserveFd_) {
+      return;
+    }
+
+    loop_.modify(*acceptor_, EPOLLIN);
+    acceptPaused_ = false;
+  }
 
 }  // namespace tinyredis

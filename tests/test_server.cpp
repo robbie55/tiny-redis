@@ -1,18 +1,23 @@
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <gtest/gtest.h>
 #include <netinet/in.h>
+#include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/timerfd.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <array>
 #include <cerrno>
 #include <cstdint>
+#include <filesystem>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <system_error>
+#include <utility>
 #include <vector>
 
 #include "core/clock.h"
@@ -95,6 +100,67 @@ namespace {
 
   void runFor(Server& server, int ms = kRunMs) {
     const StopTimer timer{server, ms};
+    server.run();
+  }
+
+  int highestOpenFd() {
+    int highest{-1};
+    for (const auto& entry : std::filesystem::directory_iterator{"/proc/self/fd"}) {
+      highest = std::max(highest, std::stoi(entry.path().filename().string()));
+    }
+    return highest;
+  }
+
+  // kNone: no fd can be allocated at all, so not even the server's reserve can be swapped.
+  // kReserveOnly: every slot is taken, and closing the reserve frees exactly one.
+  enum class FdHeadroom : std::uint8_t { kNone, kReserveOnly };
+
+  // Lowers the process fd limit so accept4 fails with EMFILE. Restored on destruction.
+  class FdCap {
+   public:
+    explicit FdCap(FdHeadroom headroom) {
+      if (::getrlimit(RLIMIT_NOFILE, &saved_) == -1) {
+        throwSys("getrlimit");
+      }
+      const rlim_t cap{headroom == FdHeadroom::kNone ? 0
+                                                     : static_cast<rlim_t>(highestOpenFd()) + 1};
+      fillers_.reserve(64);
+
+      rlimit lowered{saved_};
+      lowered.rlim_cur = cap;
+      if (::setrlimit(RLIMIT_NOFILE, &lowered) == -1) {
+        throwSys("setrlimit");
+      }
+      // Plug every hole below the cap.
+      for (;;) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): open(2) is variadic
+        UniqueFd filler{::open("/dev/null", O_RDONLY | O_CLOEXEC)};
+        if (!filler) {
+          break;
+        }
+        fillers_.push_back(std::move(filler));
+      }
+    }
+
+    ~FdCap() {
+      fillers_.clear();
+      ::setrlimit(RLIMIT_NOFILE, &saved_);
+    }
+
+    FdCap(const FdCap&) = delete;
+    FdCap& operator=(const FdCap&) = delete;
+    FdCap(FdCap&&) = delete;
+    FdCap& operator=(FdCap&&) = delete;
+
+   private:
+    rlimit saved_{};
+    std::vector<UniqueFd> fillers_;
+  };
+
+  // The stop timer takes its fd before the cap lands.
+  void runOutOfFdsFor(Server& server, FdHeadroom headroom, int ms = kRunMs) {
+    const StopTimer timer{server, ms};
+    const FdCap cap{headroom};
     server.run();
   }
 
@@ -316,4 +382,101 @@ TEST(Server, DestructionClosesLiveClients) {
 
   EXPECT_EQ(c.recvAll(), "");
   EXPECT_TRUE(c.sawEof());
+}
+
+// EMFILE and ENFILE share a path; only EMFILE can be forced from inside a test.
+
+TEST(Server, ShedsPendingClientWhenOutOfFds) {
+  const Server::Config cfg{testConfig()};
+  Server server{cfg};
+  Client c{cfg.port};
+
+  runOutOfFdsFor(server, FdHeadroom::kReserveOnly);
+
+  EXPECT_EQ(c.recvAll(), "");
+  EXPECT_TRUE(c.sawEof());
+  EXPECT_EQ(server.connectionCount(), 0U);
+}
+
+TEST(Server, ShedsEveryPendingClientWhenOutOfFds) {
+  const Server::Config cfg{testConfig()};
+  Server server{cfg};
+  std::vector<Client> clients;
+  clients.reserve(3);
+  for (int i{}; i < 3; ++i) {
+    clients.emplace_back(cfg.port);
+  }
+
+  runOutOfFdsFor(server, FdHeadroom::kReserveOnly);
+
+  for (Client& c : clients) {
+    EXPECT_EQ(c.recvAll(), "");
+    EXPECT_TRUE(c.sawEof());
+  }
+  EXPECT_EQ(server.connectionCount(), 0U);
+}
+
+TEST(Server, AcceptsAgainAfterShedding) {
+  const Server::Config cfg{testConfig()};
+  Server server{cfg};
+  Client shed{cfg.port};
+  runOutOfFdsFor(server, FdHeadroom::kReserveOnly);
+
+  Client later{cfg.port};
+  later.send("*1\r\n$4\r\nPING\r\n");
+  runFor(server);
+
+  EXPECT_EQ(later.recvAll(), "+PONG\r\n");
+  EXPECT_EQ(server.connectionCount(), 1U);
+}
+
+TEST(Server, KeepsPendingClientQueuedWhenNoFdCanBeFreed) {
+  const Server::Config cfg{testConfig()};
+  Server server{cfg};
+  Client c{cfg.port};
+
+  runOutOfFdsFor(server, FdHeadroom::kNone);
+
+  EXPECT_EQ(c.recvAll(), "");
+  EXPECT_FALSE(c.sawEof());
+  EXPECT_EQ(server.connectionCount(), 0U);
+}
+
+TEST(Server, DoesNotSpinWhenNoFdCanBeFreed) {
+  const Server::Config cfg{testConfig()};
+  Server server{cfg};
+  Client c{cfg.port};
+  const std::uint64_t before{server.loop().tick()};
+
+  runOutOfFdsFor(server, FdHeadroom::kNone);
+
+  // Paused, the loop wakes once per expireIntervalMs (~5 ticks). Spinning on the
+  // still-readable listener ticks thousands of times.
+  EXPECT_LT(server.loop().tick() - before, static_cast<std::uint64_t>(kRunMs));
+}
+
+TEST(Server, ResumesAcceptingOnceFdsFree) {
+  const Server::Config cfg{testConfig()};
+  Server server{cfg};
+  Client c{cfg.port};
+  runOutOfFdsFor(server, FdHeadroom::kNone);
+
+  c.send("*1\r\n$4\r\nPING\r\n");
+  runFor(server);
+
+  EXPECT_EQ(c.recvAll(), "+PONG\r\n");
+  EXPECT_EQ(server.connectionCount(), 1U);
+}
+
+TEST(Server, ServesExistingClientsWhileOutOfFds) {
+  const Server::Config cfg{testConfig()};
+  Server server{cfg};
+  Client c{cfg.port};
+  runFor(server);
+  ASSERT_EQ(server.connectionCount(), 1U);
+
+  c.send("*1\r\n$4\r\nPING\r\n");
+  runOutOfFdsFor(server, FdHeadroom::kNone);
+
+  EXPECT_EQ(c.recvAll(), "+PONG\r\n");
 }
