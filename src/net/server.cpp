@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cerrno>
 #include <cstdint>
+#include <cstdio>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -240,8 +241,10 @@ namespace tinyredis {
 
     loop_.modify(*acceptor_, 0);
     acceptPaused_ = true;
-    std::cerr << "Server::acceptPending -> accept paused: " << std::generic_category().message(err)
-              << '\n';
+    // Not iostream: with no fds free, UBSan's vptr check fails (it needs a pipe) and aborts.
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): fprintf is variadic, no alternative
+    std::fprintf(stderr, "Server::acceptPending -> accept paused: %s\n",
+                 std::generic_category().message(err).c_str());
   }
 
   void Server::resumeAccepting() {
