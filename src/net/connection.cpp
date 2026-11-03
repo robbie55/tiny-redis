@@ -2,8 +2,10 @@
 
 #include <unistd.h>
 
+#include <cassert>
 #include <cerrno>
 #include <string_view>
+#include <system_error>
 
 #include "core/command.h"
 #include "core/resp.h"
@@ -23,6 +25,10 @@ namespace tinyredis {
   Connection::~Connection() { server_.loop().remove(*this); }
 
   void Connection::onReadable() {
+    if (closed()) {
+      return;
+    }
+
     in_.ensureWritable(Buffer::kDefaultCapacity);
     const ssize_t ready{::read(fd_.get(), in_.writePtr(), in_.writableBytes())};
     if (ready > 0) {
@@ -137,7 +143,17 @@ namespace tinyredis {
       return;
     }
 
-    server_.loop().modify(*this, wanted);
+    try {
+      server_.loop().modify(*this, wanted);
+    } catch (const std::system_error& e) {
+      assert(e.code().value() != ENOENT && e.code().value() != EBADF);
+
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): fprintf is variadic, no alternative
+      std::fprintf(stderr, "Connection::updateInterest -> %s\n", e.what());
+      markClosed();
+      return;
+    }
+
     interest_ = wanted;
   }
 

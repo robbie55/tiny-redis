@@ -102,7 +102,7 @@ namespace tinyredis {
 
   Server::Acceptor::Acceptor(const Config& cfg, Server& server)
       : IoHandler{openListener(cfg)}, server_{server} {
-    server_.loop_.add(*this, EPOLLIN);
+    server_.loop().add(*this, EPOLLIN);
   }
 
   Server::Acceptor::~Acceptor() { server_.loop_.remove(*this); }
@@ -186,7 +186,8 @@ namespace tinyredis {
         auto connection{std::make_unique<Connection>(std::move(pendingFd), *this)};
         connections_.emplace(connection->fd(), std::move(connection));
       } catch (const std::system_error& systemErr) {
-        std::cerr << "Server::acceptPending -> " << systemErr.what() << '\n';
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): fprintf is variadic, no alternative
+        std::fprintf(stderr, "Server::acceptPending -> %s\n", systemErr.what());
       }
     }
   }
@@ -222,12 +223,10 @@ namespace tinyredis {
 
     reserveFd_.reset();
     UniqueFd shed{::accept4(acceptor_->fd(), nullptr, nullptr, SOCK_CLOEXEC)};
-    // ENFILE is system-wide: another process can take the slot just freed.
 
     const bool validShed{static_cast<bool>(shed)};
     shed.reset();
 
-    // open reserve after clearing out shed
     reserveFd_ = openReserve();
 
     return validShed;

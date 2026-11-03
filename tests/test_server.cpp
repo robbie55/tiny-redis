@@ -60,8 +60,7 @@ namespace {
     return cfg;
   }
 
-  // Calls stop() from inside the server's own loop, so tests stay single-threaded and
-  // running_ is never touched from two threads.
+  // Calls stop() from inside the server's own loop, so tests stay single-threaded
   class StopTimer final : public IoHandler {
    public:
     StopTimer(Server& server, int afterMs)

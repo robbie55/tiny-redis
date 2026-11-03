@@ -63,7 +63,7 @@ namespace tinyredis {
     std::array<epoll_event, kMaxEvents> events_{};
     UniqueFd epollFd_;
     std::uint64_t tickCount_{};
-    std::atomic<bool> running_{false};
+    std::atomic<bool> stopRequested_{false};
 
     void epollCtl(IoHandler& h, int flag, epoll_event event, const char* msg);
   };

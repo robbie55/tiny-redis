@@ -62,13 +62,11 @@ namespace tinyredis {
   }
 
   void EventLoop::run(int timeoutMs, const std::function<void()>& onTick) {
-    running_.store(true);
-
-    while (running_) {
+    while (!stopRequested_.load()) {
       const int eventsReady{
           epoll_wait(epollFd_.get(), events_.data(), static_cast<int>(events_.size()), timeoutMs)};
 
-      // interrupted by a signal; recheck running_
+      // interrupted by a signal; recheck for a requested stop
       if (eventsReady == -1 && errno == EINTR) {
         continue;
       }
@@ -96,7 +94,7 @@ namespace tinyredis {
     }
   }
 
-  void EventLoop::stop() noexcept { running_.store(false); }
+  void EventLoop::stop() noexcept { stopRequested_.store(true); }
 
   std::uint64_t EventLoop::tick() const noexcept { return tickCount_; }
 
