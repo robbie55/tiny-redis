@@ -92,6 +92,8 @@ namespace tinyredis {
       }
       onTick();
     }
+
+    stopRequested_.store(false);
   }
 
   void EventLoop::stop() noexcept { stopRequested_.store(true); }

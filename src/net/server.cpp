@@ -105,7 +105,7 @@ namespace tinyredis {
     server_.loop().add(*this, EPOLLIN);
   }
 
-  Server::Acceptor::~Acceptor() { server_.loop_.remove(*this); }
+  Server::Acceptor::~Acceptor() { server_.loop().remove(*this); }
 
   void Server::Acceptor::onReadable() { server_.acceptPending(); }
 
@@ -121,26 +121,26 @@ namespace tinyredis {
         reserveFd_{openReserve()} {}
 
   void Server::run() {
-    loop_.run(cfg_.expireIntervalMs, [this] {
+    loop().run(cfg_.expireIntervalMs, [this] {
       reapRetired();
       resumeAccepting();
       const auto tNow{now()};
       if (tNow - lastSweepMs_ >= cfg_.expireIntervalMs) {
-        store_.activeExpireCycle(tNow);
+        store_.activeExpireCycle(tNow, cfg_.expireSampleBuckets);
         lastSweepMs_ = tNow;
       }
     });
     reapRetired();
   }
 
-  void Server::stop() noexcept { loop_.stop(); }
+  void Server::stop() noexcept { loop().stop(); }
 
   Store& Server::store() noexcept { return store_; }
 
   EventLoop& Server::loop() noexcept { return loop_; }
 
   std::int64_t Server::now() noexcept {
-    const std::uint64_t lt{loop_.tick()};
+    const std::uint64_t lt{loop().tick()};
     if (lt == cachedTick_) {
       return cachedNow_;
     }
@@ -238,11 +238,11 @@ namespace tinyredis {
       return;
     }
 
-    loop_.modify(*acceptor_, 0);
+    loop().modify(*acceptor_, 0);
     acceptPaused_ = true;
     // Not iostream: with no fds free, UBSan's vptr check fails (it needs a pipe) and aborts.
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): fprintf is variadic, no alternative
-    std::fprintf(stderr, "Server::acceptPending -> accept paused: %s\n",
+    std::fprintf(stderr, "Server::pauseAccepting -> accept paused: %s\n",
                  std::generic_category().message(err).c_str());
   }
 
@@ -256,7 +256,7 @@ namespace tinyredis {
       return;
     }
 
-    loop_.modify(*acceptor_, EPOLLIN);
+    loop().modify(*acceptor_, EPOLLIN);
     acceptPaused_ = false;
   }
 

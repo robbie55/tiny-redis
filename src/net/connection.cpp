@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <cerrno>
+#include <cstdio>
 #include <string_view>
 #include <system_error>
 
@@ -101,7 +102,6 @@ namespace tinyredis {
       }
 
       if (written == 0 || errno == EAGAIN || errno == EWOULDBLOCK) {
-        // written == 0 !out_.empty() is unusual; treat it like EAGAIN, no progress
         break;
       }
 
