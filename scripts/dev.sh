@@ -133,8 +133,8 @@ cmd_fmt() {
   fi
 }
 
-# Copies the container's headers out so host clangd can analyze src/net (see .clangd).
-# Re-run after changing the base image.
+# Copies the container's headers out and generates .clangd from .clangd.in so host clangd
+# can analyze src/net. Re-run after changing the base image.
 cmd_sysroot() {
   up
   local out=.cache/linux-sysroot triple ver
@@ -145,6 +145,9 @@ cmd_sysroot() {
   dex tar -C / -cf - usr/include "usr/lib/gcc/$triple/$ver/include" "usr/lib/gcc/$triple/$ver/crtbegin.o" \
     | tar -C "$out" -xf -
   echo "wrote $out ($triple, gcc $ver)"
+  # --target must match the sysroot's arch, which is the container's, not a fixed one.
+  sed "s/@TRIPLE@/$triple/" .clangd.in > .clangd
+  echo "wrote .clangd ($triple)"
 }
 
 cmd_tidy() {
