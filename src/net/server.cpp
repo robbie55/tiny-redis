@@ -11,7 +11,6 @@
 #include <cerrno>
 #include <cstdint>
 #include <cstdio>
-#include <iostream>
 #include <limits>
 #include <memory>
 #include <stdexcept>
@@ -122,15 +121,15 @@ namespace tinyredis {
 
   void Server::run() {
     loop().run(cfg_.expireIntervalMs, [this] {
-      reapRetired();
+      destroyRetired();
       resumeAccepting();
       const auto tNow{now()};
       if (tNow - lastSweepMs_ >= cfg_.expireIntervalMs) {
-        store_.activeExpireCycle(tNow, cfg_.expireSampleBuckets);
+        store().activeExpireCycle(tNow, cfg_.expireSampleBuckets);
         lastSweepMs_ = tNow;
       }
     });
-    reapRetired();
+    destroyRetired();
   }
 
   void Server::stop() noexcept { loop().stop(); }
@@ -179,6 +178,8 @@ namespace tinyredis {
 
       const int opt{1};
       if (::setsockopt(pendingFd.get(), IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) == -1) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): fprintf is variadic, no alternative
+        std::fprintf(stderr, "Server::acceptPending -> failed to set TCP_NODELAY on connection\n");
         continue;
       }
 
@@ -192,7 +193,7 @@ namespace tinyredis {
     }
   }
 
-  void Server::reapRetired() { retired_.clear(); }
+  void Server::destroyRetired() { retired_.clear(); }
 
   // Returns whether acceptPending should keep accepting.
   bool Server::handleAcceptFailure(int err) {
@@ -238,7 +239,14 @@ namespace tinyredis {
       return;
     }
 
-    loop().modify(*acceptor_, 0);
+    try {
+      loop().modify(*acceptor_, 0);
+    } catch (const std::system_error& e) {
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): fprintf is variadic, no alternative
+      std::fprintf(stderr, "Server::pauseAccepting -> %s\n", e.what());
+      return;
+    }
+
     acceptPaused_ = true;
     // Not iostream: with no fds free, UBSan's vptr check fails (it needs a pipe) and aborts.
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): fprintf is variadic, no alternative
@@ -256,7 +264,14 @@ namespace tinyredis {
       return;
     }
 
-    loop().modify(*acceptor_, EPOLLIN);
+    try {
+      loop().modify(*acceptor_, EPOLLIN);
+    } catch (const std::system_error& e) {
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg): fprintf is variadic, no alternative
+      std::fprintf(stderr, "Server::resumeAccepting -> %s\n", e.what());
+      return;
+    }
+
     acceptPaused_ = false;
   }
 

@@ -20,6 +20,9 @@ namespace tinyredis {
       std::string bindAddr{"127.0.0.1"};
       std::uint16_t port{6380};
       int backlog{512};
+      // One expire cycle per interval, run from onTick. It is also the epoll timeout.
+      // There is no fast cycle. An expired key nobody reads waits for the sampler to find
+      // it, with no bound on how long.
       int expireIntervalMs{100};
       std::size_t expireSampleBuckets{20};
       Store::Config store{};
@@ -65,7 +68,7 @@ namespace tinyredis {
     };
 
     void acceptPending();
-    void reapRetired();
+    void destroyRetired();
     bool handleAcceptFailure(int err);
     bool shedPending();
     void pauseAccepting(int err);

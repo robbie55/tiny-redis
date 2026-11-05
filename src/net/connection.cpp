@@ -32,6 +32,8 @@ namespace tinyredis {
 
     in_.ensureWritable(Buffer::kDefaultCapacity);
     const ssize_t ready{::read(fd_.get(), in_.writePtr(), in_.writableBytes())};
+
+    // level triggered with epoll replaces need for draining until EAGAIN
     if (ready > 0) {
       in_.commit(static_cast<std::size_t>(ready));
       processInput();

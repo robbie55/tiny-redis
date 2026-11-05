@@ -60,7 +60,9 @@ namespace tinyredis {
     std::int64_t ttlMs(std::string_view key, std::int64_t now);
 
     // sampleLimit is soft: a started chain is always finished, or the reverse-binary
-    // cursor loses its resize guarantee. passes is capped at kMaxPasses.
+    // cursor loses its resize guarantee. The hard cap is sampleLimit * 20 buckets, so a
+    // sparse table can't stall the tick. Repeats while more than 10% of a pass was
+    // expired, up to kMaxPasses.
     ExpireCycleResult activeExpireCycle(std::int64_t now, std::size_t sampleLimit = 20);
 
     void clear();

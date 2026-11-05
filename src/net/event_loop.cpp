@@ -15,6 +15,18 @@ namespace {
 
     return event;
   }
+
+  void dispatchEvent(const epoll_event& event) {
+    auto* io{static_cast<tinyredis::IoHandler*>(event.data.ptr)};
+
+    if ((event.events & (EPOLLIN | EPOLLERR | EPOLLHUP)) != 0) {
+      io->onReadable();
+    }
+
+    if ((event.events & EPOLLOUT) != 0) {
+      io->onWritable();
+    }
+  }
 }  // namespace
 
 namespace tinyredis {
@@ -62,35 +74,31 @@ namespace tinyredis {
   }
 
   void EventLoop::run(int timeoutMs, const std::function<void()>& onTick) {
-    while (!stopRequested_.load()) {
-      const int eventsReady{
-          epoll_wait(epollFd_.get(), events_.data(), static_cast<int>(events_.size()), timeoutMs)};
+    try {
+      while (!stopRequested_.load()) {
+        const int eventsReady{epoll_wait(epollFd_.get(), events_.data(),
+                                         static_cast<int>(events_.size()), timeoutMs)};
 
-      // interrupted by a signal; recheck for a requested stop
-      if (eventsReady == -1 && errno == EINTR) {
-        continue;
-      }
-      if (eventsReady == -1) {
-        throw std::system_error(errno, std::generic_category(),
-                                "EventLoop::run -> Failed to run epoll_wait");
-      }
-
-      tickCount_ += 1;
-
-      // eventsReady ≤ events_.size(), never negative here
-      for (std::size_t i{}; i < static_cast<std::size_t>(eventsReady); ++i) {
-        epoll_event event{events_[i]};
-        IoHandler* io{static_cast<IoHandler*>(event.data.ptr)};
-
-        if ((event.events & (EPOLLIN | EPOLLERR | EPOLLHUP)) != 0) {
-          io->onReadable();
+        // interrupted by a signal; recheck for a requested stop
+        if (eventsReady == -1 && errno == EINTR) {
+          continue;
+        }
+        if (eventsReady == -1) {
+          throw std::system_error(errno, std::generic_category(),
+                                  "EventLoop::run -> Failed to run epoll_wait");
         }
 
-        if ((event.events & EPOLLOUT) != 0) {
-          io->onWritable();
+        tickCount_ += 1;
+
+        // eventsReady ≤ events_.size(), never negative here
+        for (std::size_t i{}; i < static_cast<std::size_t>(eventsReady); ++i) {
+          dispatchEvent(events_[i]);
         }
+        onTick();
       }
-      onTick();
+    } catch (...) {
+      stopRequested_.store(false);
+      throw;
     }
 
     stopRequested_.store(false);

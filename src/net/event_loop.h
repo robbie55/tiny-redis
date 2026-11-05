@@ -32,8 +32,7 @@ namespace tinyredis {
     UniqueFd fd_;
   };
 
-  // The epoll loop. One thread owns every socket and the whole store
-  // Level triggered
+  // Level triggered, so a handler may leave bytes unread and the fd fires again next tick.
   class EventLoop {
    public:
     EventLoop();
@@ -49,7 +48,7 @@ namespace tinyredis {
     void remove(IoHandler& h) noexcept;
 
     // Runs until stop(). `onTick` fires after each batch of events and on every timeout.
-    // timeoutMs bounds the TTL sweep interval on an idle server.
+    // timeoutMs bounds the gap between ticks on an idle server.
     void run(int timeoutMs, const std::function<void()>& onTick);
 
     void stop() noexcept;
