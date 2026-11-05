@@ -1,0 +1,4 @@
+CompileFlags:
+    CompilationDatabase: "build/debug"
+    Add: [--target=@TRIPLE@, --sysroot=../../.cache/linux-sysroot]
+    Remove: [-arch, arm64, -isysroot*, -mmacosx-version-min*]

@@ -56,6 +56,7 @@ startup.
 | `hw` | capture CPU / kernel / toolchain facts to `docs/hardware.txt`. |
 | `fmt [--fix]` | `clang-format`. The bare form is the same check CI runs. |
 | `tidy [preset]` | `clang-tidy` over the compile database. |
+| `sysroot` | copy the container's headers to `.cache/linux-sysroot` and generate `.clangd`. Re-run after changing the base image. |
 | `shell` | interactive bash in the container. |
 | `down` | stop the container. Build artifacts survive. |
 | `clean` | stop and drop the build volume. Next build is from scratch. |
@@ -80,15 +81,13 @@ Presets everywhere: `debug`, `release`, `asan`, `tsan`.
 
 ## Things that will bite you
 
-**Unwritten code fails on purpose.** Unwritten test bodies are `FAIL() << "TODO(robbie)"`
-and unwritten functions call `unimplemented()`, which aborts. `server`, `cli` and `bench`
-abort until the net layer and command dispatch exist.
-
 **`build/` is a named Docker volume, not part of the bind mount.** Otherwise the macOS and
 Linux `CMakeCache`s collide over `build/<preset>`, and object files on VirtioFS compile
 much slower. The catch is that host `clangd` can't see the container's
 `compile_commands.json` and uses the native build instead, so configure `debug` natively
-at least once. `clean` discards this volume, including the FetchContent clones of
+at least once. Native macOS headers have no epoll, so run `sysroot` too. It generates
+`.clangd` (gitignored, from `.clangd.in`), which points clangd at the container's Linux
+headers so it can analyze `src/net`. `clean` discards this volume, including the FetchContent clones of
 GoogleTest and pool-allocator.
 
 **Architecture must be native.** On Apple Silicon the image must be `aarch64`. An `x86_64`
