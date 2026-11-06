@@ -15,6 +15,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 # build-essential -> gcc-13/g++-13, which is C++20-complete.
 # cmake on 24.04 is 3.28, satisfying our cmake_minimum_required(3.25).
 # redis-tools -> redis-cli for smoke tests, redis-benchmark for the benchmark.
+# redis-server -> the baseline every benchmark number is compared against. Same 7.0.x as
+# redis-tools, both from Ubuntu's archive.
 # clang-format/clang-tidy match the CI lint jobs so formatting fails here, not on CI.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential \
@@ -29,6 +31,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       git \
       ninja-build \
       pkg-config \
+      redis-server \
       redis-tools \
       strace \
       tmux \
