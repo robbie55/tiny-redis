@@ -1,0 +1,550 @@
+2294:C 05 Nov 2026 18:42:57.408 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+2294:C 05 Nov 2026 18:42:57.408 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=2294, just started
+2294:C 05 Nov 2026 18:42:57.408 # Configuration loaded
+2294:M 05 Nov 2026 18:42:57.408 * monotonic clock: POSIX clock_gettime
+2294:M 05 Nov 2026 18:42:57.409 * Running mode=standalone, port=6393.
+2294:M 05 Nov 2026 18:42:57.409 # Server initialized
+2294:M 05 Nov 2026 18:42:57.411 * Ready to accept connections
+2294:signal-handler (1793904240) Received SIGTERM scheduling shutdown...
+2294:M 05 Nov 2026 18:44:00.803 # User requested shutdown...
+2294:M 05 Nov 2026 18:44:00.803 # Redis is now ready to exit, bye bye...
+2419:C 05 Nov 2026 18:44:00.849 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+2419:C 05 Nov 2026 18:44:00.849 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=2419, just started
+2419:C 05 Nov 2026 18:44:00.849 # Configuration loaded
+2419:M 05 Nov 2026 18:44:00.849 * monotonic clock: POSIX clock_gettime
+2419:M 05 Nov 2026 18:44:00.850 * Running mode=standalone, port=6393.
+2419:M 05 Nov 2026 18:44:00.850 # Server initialized
+2419:M 05 Nov 2026 18:44:00.853 * Ready to accept connections
+2419:signal-handler (1793904304) Received SIGTERM scheduling shutdown...
+2419:M 05 Nov 2026 18:45:04.816 # User requested shutdown...
+2419:M 05 Nov 2026 18:45:04.817 # Redis is now ready to exit, bye bye...
+2784:C 05 Nov 2026 18:46:54.583 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+2784:C 05 Nov 2026 18:46:54.583 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=2784, just started
+2784:C 05 Nov 2026 18:46:54.584 # Configuration loaded
+2784:M 05 Nov 2026 18:46:54.584 * monotonic clock: POSIX clock_gettime
+2784:M 05 Nov 2026 18:46:54.585 * Running mode=standalone, port=6393.
+2784:M 05 Nov 2026 18:46:54.585 # Server initialized
+2784:M 05 Nov 2026 18:46:54.587 * Ready to accept connections
+2784:signal-handler (1793904477) Received SIGTERM scheduling shutdown...
+2784:M 05 Nov 2026 18:47:57.962 # User requested shutdown...
+2784:M 05 Nov 2026 18:47:57.962 # Redis is now ready to exit, bye bye...
+2909:C 05 Nov 2026 18:47:58.003 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+2909:C 05 Nov 2026 18:47:58.003 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=2909, just started
+2909:C 05 Nov 2026 18:47:58.003 # Configuration loaded
+2909:M 05 Nov 2026 18:47:58.003 * monotonic clock: POSIX clock_gettime
+2909:M 05 Nov 2026 18:47:58.004 * Running mode=standalone, port=6393.
+2909:M 05 Nov 2026 18:47:58.004 # Server initialized
+2909:M 05 Nov 2026 18:47:58.006 * Ready to accept connections
+2909:signal-handler (1793904541) Received SIGTERM scheduling shutdown...
+2909:M 05 Nov 2026 18:49:01.883 # User requested shutdown...
+2909:M 05 Nov 2026 18:49:01.883 # Redis is now ready to exit, bye bye...
+3274:C 05 Nov 2026 18:50:54.286 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+3274:C 05 Nov 2026 18:50:54.286 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=3274, just started
+3274:C 05 Nov 2026 18:50:54.286 # Configuration loaded
+3274:M 05 Nov 2026 18:50:54.287 * monotonic clock: POSIX clock_gettime
+3274:M 05 Nov 2026 18:50:54.287 * Running mode=standalone, port=6393.
+3274:M 05 Nov 2026 18:50:54.287 # Server initialized
+3274:M 05 Nov 2026 18:50:54.289 * Ready to accept connections
+3274:signal-handler (1793904721) Received SIGTERM scheduling shutdown...
+3274:M 05 Nov 2026 18:52:01.387 # User requested shutdown...
+3274:M 05 Nov 2026 18:52:01.387 # Redis is now ready to exit, bye bye...
+3636:C 05 Nov 2026 19:01:32.753 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+3636:C 05 Nov 2026 19:01:32.756 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=3636, just started
+3636:C 05 Nov 2026 19:01:32.756 # Configuration loaded
+3636:M 05 Nov 2026 19:01:32.757 * monotonic clock: POSIX clock_gettime
+3636:M 05 Nov 2026 19:01:32.757 * Running mode=standalone, port=6393.
+3636:M 05 Nov 2026 19:01:32.758 # Server initialized
+3636:M 05 Nov 2026 19:01:32.760 * Ready to accept connections
+3636:signal-handler (1793905356) Received SIGTERM scheduling shutdown...
+3636:M 05 Nov 2026 19:02:36.537 # User requested shutdown...
+3636:M 05 Nov 2026 19:02:36.537 # Redis is now ready to exit, bye bye...
+3761:C 05 Nov 2026 19:02:36.570 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+3761:C 05 Nov 2026 19:02:36.570 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=3761, just started
+3761:C 05 Nov 2026 19:02:36.570 # Configuration loaded
+3761:M 05 Nov 2026 19:02:36.571 * monotonic clock: POSIX clock_gettime
+3761:M 05 Nov 2026 19:02:36.572 * Running mode=standalone, port=6393.
+3761:M 05 Nov 2026 19:02:36.572 # Server initialized
+3761:M 05 Nov 2026 19:02:36.574 * Ready to accept connections
+3761:signal-handler (1793905420) Received SIGTERM scheduling shutdown...
+3761:M 05 Nov 2026 19:03:40.350 # User requested shutdown...
+3761:M 05 Nov 2026 19:03:40.350 # Redis is now ready to exit, bye bye...
+4124:C 05 Nov 2026 19:05:27.091 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+4124:C 05 Nov 2026 19:05:27.092 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=4124, just started
+4124:C 05 Nov 2026 19:05:27.092 # Configuration loaded
+4124:M 05 Nov 2026 19:05:27.092 * monotonic clock: POSIX clock_gettime
+4124:M 05 Nov 2026 19:05:27.093 * Running mode=standalone, port=6393.
+4124:M 05 Nov 2026 19:05:27.093 # Server initialized
+4124:M 05 Nov 2026 19:05:27.095 * Ready to accept connections
+4124:signal-handler (1793905594) Received SIGTERM scheduling shutdown...
+4124:M 05 Nov 2026 19:06:34.591 # User requested shutdown...
+4124:M 05 Nov 2026 19:06:34.591 # Redis is now ready to exit, bye bye...
+4249:C 05 Nov 2026 19:06:34.641 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+4249:C 05 Nov 2026 19:06:34.641 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=4249, just started
+4249:C 05 Nov 2026 19:06:34.641 # Configuration loaded
+4249:M 05 Nov 2026 19:06:34.642 * monotonic clock: POSIX clock_gettime
+4249:M 05 Nov 2026 19:06:34.642 * Running mode=standalone, port=6393.
+4249:M 05 Nov 2026 19:06:34.642 # Server initialized
+4249:M 05 Nov 2026 19:06:34.644 * Ready to accept connections
+4249:signal-handler (1793905657) Received SIGTERM scheduling shutdown...
+4249:M 05 Nov 2026 19:07:37.519 # User requested shutdown...
+4249:M 05 Nov 2026 19:07:37.519 # Redis is now ready to exit, bye bye...
+4614:C 05 Nov 2026 19:09:24.041 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+4614:C 05 Nov 2026 19:09:24.041 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=4614, just started
+4614:C 05 Nov 2026 19:09:24.041 # Configuration loaded
+4614:M 05 Nov 2026 19:09:24.042 * monotonic clock: POSIX clock_gettime
+4614:M 05 Nov 2026 19:09:24.043 * Running mode=standalone, port=6393.
+4614:M 05 Nov 2026 19:09:24.043 # Server initialized
+4614:M 05 Nov 2026 19:09:24.045 * Ready to accept connections
+4614:signal-handler (1793905828) Received SIGTERM scheduling shutdown...
+4614:M 05 Nov 2026 19:10:28.763 # User requested shutdown...
+4614:M 05 Nov 2026 19:10:28.763 # Redis is now ready to exit, bye bye...
+4739:C 05 Nov 2026 19:10:28.805 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+4739:C 05 Nov 2026 19:10:28.806 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=4739, just started
+4739:C 05 Nov 2026 19:10:28.806 # Configuration loaded
+4739:M 05 Nov 2026 19:10:28.806 * monotonic clock: POSIX clock_gettime
+4739:M 05 Nov 2026 19:10:28.807 * Running mode=standalone, port=6393.
+4739:M 05 Nov 2026 19:10:28.807 # Server initialized
+4739:M 05 Nov 2026 19:10:28.809 * Ready to accept connections
+4739:signal-handler (1793905895) Received SIGTERM scheduling shutdown...
+4739:M 05 Nov 2026 19:11:35.379 # User requested shutdown...
+4739:M 05 Nov 2026 19:11:35.379 # Redis is now ready to exit, bye bye...
+5104:C 05 Nov 2026 19:13:22.414 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+5104:C 05 Nov 2026 19:13:22.415 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=5104, just started
+5104:C 05 Nov 2026 19:13:22.415 # Configuration loaded
+5104:M 05 Nov 2026 19:13:22.416 * monotonic clock: POSIX clock_gettime
+5104:M 05 Nov 2026 19:13:22.417 * Running mode=standalone, port=6393.
+5104:M 05 Nov 2026 19:13:22.417 # Server initialized
+5104:M 05 Nov 2026 19:13:22.420 * Ready to accept connections
+5104:signal-handler (1793906065) Received SIGTERM scheduling shutdown...
+5104:M 05 Nov 2026 19:14:25.482 # User requested shutdown...
+5104:M 05 Nov 2026 19:14:25.482 # Redis is now ready to exit, bye bye...
+5229:C 05 Nov 2026 19:14:25.514 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+5229:C 05 Nov 2026 19:14:25.514 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=5229, just started
+5229:C 05 Nov 2026 19:14:25.514 # Configuration loaded
+5229:M 05 Nov 2026 19:14:25.514 * monotonic clock: POSIX clock_gettime
+5229:M 05 Nov 2026 19:14:25.516 * Running mode=standalone, port=6393.
+5229:M 05 Nov 2026 19:14:25.516 # Server initialized
+5229:M 05 Nov 2026 19:14:25.519 * Ready to accept connections
+5229:signal-handler (1793906129) Received SIGTERM scheduling shutdown...
+5229:M 05 Nov 2026 19:15:29.098 # User requested shutdown...
+5229:M 05 Nov 2026 19:15:29.099 # Redis is now ready to exit, bye bye...
+5594:C 05 Nov 2026 19:17:16.915 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+5594:C 05 Nov 2026 19:17:16.916 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=5594, just started
+5594:C 05 Nov 2026 19:17:16.916 # Configuration loaded
+5594:M 05 Nov 2026 19:17:16.916 * monotonic clock: POSIX clock_gettime
+5594:M 05 Nov 2026 19:17:16.917 * Running mode=standalone, port=6393.
+5594:M 05 Nov 2026 19:17:16.917 # Server initialized
+5594:M 05 Nov 2026 19:17:16.919 * Ready to accept connections
+5594:signal-handler (1793906301) Received SIGTERM scheduling shutdown...
+5594:M 05 Nov 2026 19:18:21.317 # User requested shutdown...
+5594:M 05 Nov 2026 19:18:21.318 # Redis is now ready to exit, bye bye...
+5719:C 05 Nov 2026 19:18:21.363 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+5719:C 05 Nov 2026 19:18:21.363 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=5719, just started
+5719:C 05 Nov 2026 19:18:21.364 # Configuration loaded
+5719:M 05 Nov 2026 19:18:21.364 * monotonic clock: POSIX clock_gettime
+5719:M 05 Nov 2026 19:18:21.365 * Running mode=standalone, port=6393.
+5719:M 05 Nov 2026 19:18:21.365 # Server initialized
+5719:M 05 Nov 2026 19:18:21.367 * Ready to accept connections
+5719:signal-handler (1793906365) Received SIGTERM scheduling shutdown...
+5719:M 05 Nov 2026 19:19:25.475 # User requested shutdown...
+5719:M 05 Nov 2026 19:19:25.475 # Redis is now ready to exit, bye bye...
+6082:C 05 Nov 2026 19:21:14.548 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+6082:C 05 Nov 2026 19:21:14.548 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=6082, just started
+6082:C 05 Nov 2026 19:21:14.549 # Configuration loaded
+6082:M 05 Nov 2026 19:21:14.549 * monotonic clock: POSIX clock_gettime
+6082:M 05 Nov 2026 19:21:14.550 * Running mode=standalone, port=6393.
+6082:M 05 Nov 2026 19:21:14.550 # Server initialized
+6082:M 05 Nov 2026 19:21:14.552 * Ready to accept connections
+6082:signal-handler (1793906538) Received SIGTERM scheduling shutdown...
+6082:M 05 Nov 2026 19:22:18.425 # User requested shutdown...
+6082:M 05 Nov 2026 19:22:18.425 # Redis is now ready to exit, bye bye...
+6207:C 05 Nov 2026 19:22:18.462 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+6207:C 05 Nov 2026 19:22:18.462 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=6207, just started
+6207:C 05 Nov 2026 19:22:18.462 # Configuration loaded
+6207:M 05 Nov 2026 19:22:18.462 * monotonic clock: POSIX clock_gettime
+6207:M 05 Nov 2026 19:22:18.463 * Running mode=standalone, port=6393.
+6207:M 05 Nov 2026 19:22:18.463 # Server initialized
+6207:M 05 Nov 2026 19:22:18.465 * Ready to accept connections
+6207:signal-handler (1793906601) Received SIGTERM scheduling shutdown...
+6207:M 05 Nov 2026 19:23:21.821 # User requested shutdown...
+6207:M 05 Nov 2026 19:23:21.822 # Redis is now ready to exit, bye bye...
+6570:C 05 Nov 2026 19:25:08.012 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+6570:C 05 Nov 2026 19:25:08.013 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=6570, just started
+6570:C 05 Nov 2026 19:25:08.013 # Configuration loaded
+6570:M 05 Nov 2026 19:25:08.013 * monotonic clock: POSIX clock_gettime
+6570:M 05 Nov 2026 19:25:08.014 * Running mode=standalone, port=6393.
+6570:M 05 Nov 2026 19:25:08.014 # Server initialized
+6570:M 05 Nov 2026 19:25:08.016 * Ready to accept connections
+6570:signal-handler (1793906772) Received SIGTERM scheduling shutdown...
+6570:M 05 Nov 2026 19:26:12.093 # User requested shutdown...
+6570:M 05 Nov 2026 19:26:12.093 # Redis is now ready to exit, bye bye...
+6695:C 05 Nov 2026 19:26:12.135 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+6695:C 05 Nov 2026 19:26:12.136 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=6695, just started
+6695:C 05 Nov 2026 19:26:12.136 # Configuration loaded
+6695:M 05 Nov 2026 19:26:12.136 * monotonic clock: POSIX clock_gettime
+6695:M 05 Nov 2026 19:26:12.137 * Running mode=standalone, port=6393.
+6695:M 05 Nov 2026 19:26:12.137 # Server initialized
+6695:M 05 Nov 2026 19:26:12.139 * Ready to accept connections
+6695:signal-handler (1793906835) Received SIGTERM scheduling shutdown...
+6695:M 05 Nov 2026 19:27:15.529 # User requested shutdown...
+6695:M 05 Nov 2026 19:27:15.529 # Redis is now ready to exit, bye bye...
+7060:C 05 Nov 2026 19:29:01.370 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+7060:C 05 Nov 2026 19:29:01.371 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=7060, just started
+7060:C 05 Nov 2026 19:29:01.371 # Configuration loaded
+7060:M 05 Nov 2026 19:29:01.371 * monotonic clock: POSIX clock_gettime
+7060:M 05 Nov 2026 19:29:01.372 * Running mode=standalone, port=6393.
+7060:M 05 Nov 2026 19:29:01.372 # Server initialized
+7060:M 05 Nov 2026 19:29:01.374 * Ready to accept connections
+7060:signal-handler (1793907003) Received SIGTERM scheduling shutdown...
+7060:M 05 Nov 2026 19:30:03.966 # User requested shutdown...
+7060:M 05 Nov 2026 19:30:03.966 # Redis is now ready to exit, bye bye...
+7185:C 05 Nov 2026 19:30:03.989 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+7185:C 05 Nov 2026 19:30:03.989 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=7185, just started
+7185:C 05 Nov 2026 19:30:03.989 # Configuration loaded
+7185:M 05 Nov 2026 19:30:03.989 * monotonic clock: POSIX clock_gettime
+7185:M 05 Nov 2026 19:30:03.990 * Running mode=standalone, port=6393.
+7185:M 05 Nov 2026 19:30:03.990 # Server initialized
+7185:M 05 Nov 2026 19:30:03.992 * Ready to accept connections
+7185:signal-handler (1793907067) Received SIGTERM scheduling shutdown...
+7185:M 05 Nov 2026 19:31:07.885 # User requested shutdown...
+7185:M 05 Nov 2026 19:31:07.885 # Redis is now ready to exit, bye bye...
+7550:C 05 Nov 2026 19:32:55.107 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+7550:C 05 Nov 2026 19:32:55.108 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=7550, just started
+7550:C 05 Nov 2026 19:32:55.108 # Configuration loaded
+7550:M 05 Nov 2026 19:32:55.108 * monotonic clock: POSIX clock_gettime
+7550:M 05 Nov 2026 19:32:55.109 * Running mode=standalone, port=6393.
+7550:M 05 Nov 2026 19:32:55.109 # Server initialized
+7550:M 05 Nov 2026 19:32:55.111 * Ready to accept connections
+7550:signal-handler (1793907238) Received SIGTERM scheduling shutdown...
+7550:M 05 Nov 2026 19:33:58.786 # User requested shutdown...
+7550:M 05 Nov 2026 19:33:58.786 # Redis is now ready to exit, bye bye...
+7675:C 05 Nov 2026 19:33:58.816 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+7675:C 05 Nov 2026 19:33:58.817 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=7675, just started
+7675:C 05 Nov 2026 19:33:58.817 # Configuration loaded
+7675:M 05 Nov 2026 19:33:58.817 * monotonic clock: POSIX clock_gettime
+7675:M 05 Nov 2026 19:33:58.818 * Running mode=standalone, port=6393.
+7675:M 05 Nov 2026 19:33:58.818 # Server initialized
+7675:M 05 Nov 2026 19:33:58.820 * Ready to accept connections
+7675:signal-handler (1793907302) Received SIGTERM scheduling shutdown...
+7675:M 05 Nov 2026 19:35:02.156 # User requested shutdown...
+7675:M 05 Nov 2026 19:35:02.156 # Redis is now ready to exit, bye bye...
+8038:C 05 Nov 2026 19:36:47.453 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+8038:C 05 Nov 2026 19:36:47.453 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=8038, just started
+8038:C 05 Nov 2026 19:36:47.453 # Configuration loaded
+8038:M 05 Nov 2026 19:36:47.454 * monotonic clock: POSIX clock_gettime
+8038:M 05 Nov 2026 19:36:47.455 * Running mode=standalone, port=6393.
+8038:M 05 Nov 2026 19:36:47.455 # Server initialized
+8038:M 05 Nov 2026 19:36:47.458 * Ready to accept connections
+8038:signal-handler (1793907470) Received SIGTERM scheduling shutdown...
+8038:M 05 Nov 2026 19:37:50.836 # User requested shutdown...
+8038:M 05 Nov 2026 19:37:50.836 # Redis is now ready to exit, bye bye...
+8163:C 05 Nov 2026 19:37:50.874 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+8163:C 05 Nov 2026 19:37:50.875 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=8163, just started
+8163:C 05 Nov 2026 19:37:50.875 # Configuration loaded
+8163:M 05 Nov 2026 19:37:50.875 * monotonic clock: POSIX clock_gettime
+8163:M 05 Nov 2026 19:37:50.877 * Running mode=standalone, port=6393.
+8163:M 05 Nov 2026 19:37:50.878 # Server initialized
+8163:M 05 Nov 2026 19:37:50.882 * Ready to accept connections
+8163:signal-handler (1793907534) Received SIGTERM scheduling shutdown...
+8163:M 05 Nov 2026 19:38:54.249 # User requested shutdown...
+8163:M 05 Nov 2026 19:38:54.250 # Redis is now ready to exit, bye bye...
+8528:C 05 Nov 2026 19:40:40.455 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+8528:C 05 Nov 2026 19:40:40.456 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=8528, just started
+8528:C 05 Nov 2026 19:40:40.456 # Configuration loaded
+8528:M 05 Nov 2026 19:40:40.456 * monotonic clock: POSIX clock_gettime
+8528:M 05 Nov 2026 19:40:40.457 * Running mode=standalone, port=6393.
+8528:M 05 Nov 2026 19:40:40.457 # Server initialized
+8528:M 05 Nov 2026 19:40:40.460 * Ready to accept connections
+8528:signal-handler (1793907707) Received SIGTERM scheduling shutdown...
+8528:M 05 Nov 2026 19:41:47.368 # User requested shutdown...
+8528:M 05 Nov 2026 19:41:47.369 # Redis is now ready to exit, bye bye...
+8653:C 05 Nov 2026 19:41:47.412 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+8653:C 05 Nov 2026 19:41:47.412 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=8653, just started
+8653:C 05 Nov 2026 19:41:47.412 # Configuration loaded
+8653:M 05 Nov 2026 19:41:47.413 * monotonic clock: POSIX clock_gettime
+8653:M 05 Nov 2026 19:41:47.414 * Running mode=standalone, port=6393.
+8653:M 05 Nov 2026 19:41:47.414 # Server initialized
+8653:M 05 Nov 2026 19:41:47.416 * Ready to accept connections
+8653:signal-handler (1793907770) Received SIGTERM scheduling shutdown...
+8653:M 05 Nov 2026 19:42:50.679 # User requested shutdown...
+8653:M 05 Nov 2026 19:42:50.679 # Redis is now ready to exit, bye bye...
+9018:C 05 Nov 2026 19:44:36.005 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+9018:C 05 Nov 2026 19:44:36.005 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=9018, just started
+9018:C 05 Nov 2026 19:44:36.005 # Configuration loaded
+9018:M 05 Nov 2026 19:44:36.006 * monotonic clock: POSIX clock_gettime
+9018:M 05 Nov 2026 19:44:36.006 * Running mode=standalone, port=6393.
+9018:M 05 Nov 2026 19:44:36.006 # Server initialized
+9018:M 05 Nov 2026 19:44:36.008 * Ready to accept connections
+9018:signal-handler (1793907938) Received SIGTERM scheduling shutdown...
+9018:M 05 Nov 2026 19:45:39.062 # User requested shutdown...
+9018:M 05 Nov 2026 19:45:39.062 # Redis is now ready to exit, bye bye...
+9143:C 05 Nov 2026 19:45:39.082 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+9143:C 05 Nov 2026 19:45:39.082 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=9143, just started
+9143:C 05 Nov 2026 19:45:39.082 # Configuration loaded
+9143:M 05 Nov 2026 19:45:39.082 * monotonic clock: POSIX clock_gettime
+9143:M 05 Nov 2026 19:45:39.083 * Running mode=standalone, port=6393.
+9143:M 05 Nov 2026 19:45:39.083 # Server initialized
+9143:M 05 Nov 2026 19:45:39.084 * Ready to accept connections
+9143:signal-handler (1793908003) Received SIGTERM scheduling shutdown...
+9143:M 05 Nov 2026 19:46:43.157 # User requested shutdown...
+9143:M 05 Nov 2026 19:46:43.157 # Redis is now ready to exit, bye bye...
+9508:C 05 Nov 2026 19:48:28.590 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+9508:C 05 Nov 2026 19:48:28.591 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=9508, just started
+9508:C 05 Nov 2026 19:48:28.591 # Configuration loaded
+9508:M 05 Nov 2026 19:48:28.592 * monotonic clock: POSIX clock_gettime
+9508:M 05 Nov 2026 19:48:28.593 * Running mode=standalone, port=6393.
+9508:M 05 Nov 2026 19:48:28.594 # Server initialized
+9508:M 05 Nov 2026 19:48:28.600 * Ready to accept connections
+9508:signal-handler (1793908171) Received SIGTERM scheduling shutdown...
+9508:M 05 Nov 2026 19:49:32.000 # User requested shutdown...
+9508:M 05 Nov 2026 19:49:32.000 # Redis is now ready to exit, bye bye...
+9633:C 05 Nov 2026 19:49:32.040 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+9633:C 05 Nov 2026 19:49:32.041 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=9633, just started
+9633:C 05 Nov 2026 19:49:32.041 # Configuration loaded
+9633:M 05 Nov 2026 19:49:32.041 * monotonic clock: POSIX clock_gettime
+9633:M 05 Nov 2026 19:49:32.042 * Running mode=standalone, port=6393.
+9633:M 05 Nov 2026 19:49:32.042 # Server initialized
+9633:M 05 Nov 2026 19:49:32.044 * Ready to accept connections
+9633:signal-handler (1793908236) Received SIGTERM scheduling shutdown...
+9633:M 05 Nov 2026 19:50:36.451 # User requested shutdown...
+9633:M 05 Nov 2026 19:50:36.453 # Redis is now ready to exit, bye bye...
+9998:C 05 Nov 2026 19:52:27.346 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+9998:C 05 Nov 2026 19:52:27.347 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=9998, just started
+9998:C 05 Nov 2026 19:52:27.347 # Configuration loaded
+9998:M 05 Nov 2026 19:52:27.348 * monotonic clock: POSIX clock_gettime
+9998:M 05 Nov 2026 19:52:27.348 * Running mode=standalone, port=6393.
+9998:M 05 Nov 2026 19:52:27.349 # Server initialized
+9998:M 05 Nov 2026 19:52:27.351 * Ready to accept connections
+9998:signal-handler (1793908411) Received SIGTERM scheduling shutdown...
+9998:M 05 Nov 2026 19:53:31.732 # User requested shutdown...
+9998:M 05 Nov 2026 19:53:31.732 # Redis is now ready to exit, bye bye...
+10123:C 05 Nov 2026 19:53:31.766 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+10123:C 05 Nov 2026 19:53:31.766 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=10123, just started
+10123:C 05 Nov 2026 19:53:31.766 # Configuration loaded
+10123:M 05 Nov 2026 19:53:31.767 * monotonic clock: POSIX clock_gettime
+10123:M 05 Nov 2026 19:53:31.767 * Running mode=standalone, port=6393.
+10123:M 05 Nov 2026 19:53:31.768 # Server initialized
+10123:M 05 Nov 2026 19:53:31.770 * Ready to accept connections
+10123:signal-handler (1793908475) Received SIGTERM scheduling shutdown...
+10123:M 05 Nov 2026 19:54:35.888 # User requested shutdown...
+10123:M 05 Nov 2026 19:54:35.889 # Redis is now ready to exit, bye bye...
+10488:C 05 Nov 2026 19:56:20.804 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+10488:C 05 Nov 2026 19:56:20.805 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=10488, just started
+10488:C 05 Nov 2026 19:56:20.805 # Configuration loaded
+10488:M 05 Nov 2026 19:56:20.805 * monotonic clock: POSIX clock_gettime
+10488:M 05 Nov 2026 19:56:20.806 * Running mode=standalone, port=6393.
+10488:M 05 Nov 2026 19:56:20.806 # Server initialized
+10488:M 05 Nov 2026 19:56:20.808 * Ready to accept connections
+10488:signal-handler (1793908647) Received SIGTERM scheduling shutdown...
+10488:M 05 Nov 2026 19:57:27.845 # User requested shutdown...
+10488:M 05 Nov 2026 19:57:27.845 # Redis is now ready to exit, bye bye...
+10613:C 05 Nov 2026 19:57:27.889 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+10613:C 05 Nov 2026 19:57:27.890 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=10613, just started
+10613:C 05 Nov 2026 19:57:27.890 # Configuration loaded
+10613:M 05 Nov 2026 19:57:27.890 * monotonic clock: POSIX clock_gettime
+10613:M 05 Nov 2026 19:57:27.891 * Running mode=standalone, port=6393.
+10613:M 05 Nov 2026 19:57:27.891 # Server initialized
+10613:M 05 Nov 2026 19:57:27.893 * Ready to accept connections
+10613:signal-handler (1793908711) Received SIGTERM scheduling shutdown...
+10613:M 05 Nov 2026 19:58:31.774 # User requested shutdown...
+10613:M 05 Nov 2026 19:58:31.774 # Redis is now ready to exit, bye bye...
+10976:C 05 Nov 2026 20:00:19.171 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+10976:C 05 Nov 2026 20:00:19.172 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=10976, just started
+10976:C 05 Nov 2026 20:00:19.172 # Configuration loaded
+10976:M 05 Nov 2026 20:00:19.172 * monotonic clock: POSIX clock_gettime
+10976:M 05 Nov 2026 20:00:19.173 * Running mode=standalone, port=6393.
+10976:M 05 Nov 2026 20:00:19.173 # Server initialized
+10976:M 05 Nov 2026 20:00:19.175 * Ready to accept connections
+10976:signal-handler (1793908885) Received SIGTERM scheduling shutdown...
+10976:M 05 Nov 2026 20:01:25.589 # User requested shutdown...
+10976:M 05 Nov 2026 20:01:25.589 # Redis is now ready to exit, bye bye...
+11101:C 05 Nov 2026 20:01:25.628 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+11101:C 05 Nov 2026 20:01:25.628 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=11101, just started
+11101:C 05 Nov 2026 20:01:25.628 # Configuration loaded
+11101:M 05 Nov 2026 20:01:25.629 * monotonic clock: POSIX clock_gettime
+11101:M 05 Nov 2026 20:01:25.629 * Running mode=standalone, port=6393.
+11101:M 05 Nov 2026 20:01:25.629 # Server initialized
+11101:M 05 Nov 2026 20:01:25.633 * Ready to accept connections
+11101:signal-handler (1793908951) Received SIGTERM scheduling shutdown...
+11101:M 05 Nov 2026 20:02:31.738 # User requested shutdown...
+11101:M 05 Nov 2026 20:02:31.738 # Redis is now ready to exit, bye bye...
+11466:C 05 Nov 2026 20:04:22.060 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+11466:C 05 Nov 2026 20:04:22.060 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=11466, just started
+11466:C 05 Nov 2026 20:04:22.060 # Configuration loaded
+11466:M 05 Nov 2026 20:04:22.060 * monotonic clock: POSIX clock_gettime
+11466:M 05 Nov 2026 20:04:22.061 * Running mode=standalone, port=6393.
+11466:M 05 Nov 2026 20:04:22.061 # Server initialized
+11466:M 05 Nov 2026 20:04:22.063 * Ready to accept connections
+11466:signal-handler (1793909129) Received SIGTERM scheduling shutdown...
+11466:M 05 Nov 2026 20:05:29.696 # User requested shutdown...
+11466:M 05 Nov 2026 20:05:29.696 # Redis is now ready to exit, bye bye...
+11591:C 05 Nov 2026 20:05:29.730 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+11591:C 05 Nov 2026 20:05:29.730 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=11591, just started
+11591:C 05 Nov 2026 20:05:29.730 # Configuration loaded
+11591:M 05 Nov 2026 20:05:29.730 * monotonic clock: POSIX clock_gettime
+11591:M 05 Nov 2026 20:05:29.731 * Running mode=standalone, port=6393.
+11591:M 05 Nov 2026 20:05:29.731 # Server initialized
+11591:M 05 Nov 2026 20:05:29.734 * Ready to accept connections
+11591:signal-handler (1793909198) Received SIGTERM scheduling shutdown...
+11591:M 05 Nov 2026 20:06:38.404 # User requested shutdown...
+11591:M 05 Nov 2026 20:06:38.404 # Redis is now ready to exit, bye bye...
+11956:C 05 Nov 2026 20:08:29.627 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+11956:C 05 Nov 2026 20:08:29.628 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=11956, just started
+11956:C 05 Nov 2026 20:08:29.628 # Configuration loaded
+11956:M 05 Nov 2026 20:08:29.628 * monotonic clock: POSIX clock_gettime
+11956:M 05 Nov 2026 20:08:29.629 * Running mode=standalone, port=6393.
+11956:M 05 Nov 2026 20:08:29.629 # Server initialized
+11956:M 05 Nov 2026 20:08:29.633 * Ready to accept connections
+11956:signal-handler (1793909375) Received SIGTERM scheduling shutdown...
+11956:M 05 Nov 2026 20:09:35.941 # User requested shutdown...
+11956:M 05 Nov 2026 20:09:35.941 # Redis is now ready to exit, bye bye...
+12081:C 05 Nov 2026 20:09:35.978 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+12081:C 05 Nov 2026 20:09:35.978 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=12081, just started
+12081:C 05 Nov 2026 20:09:35.978 # Configuration loaded
+12081:M 05 Nov 2026 20:09:35.978 * monotonic clock: POSIX clock_gettime
+12081:M 05 Nov 2026 20:09:35.979 * Running mode=standalone, port=6393.
+12081:M 05 Nov 2026 20:09:35.979 # Server initialized
+12081:M 05 Nov 2026 20:09:35.981 * Ready to accept connections
+12081:signal-handler (1793909442) Received SIGTERM scheduling shutdown...
+12081:M 05 Nov 2026 20:10:42.591 # User requested shutdown...
+12081:M 05 Nov 2026 20:10:42.591 # Redis is now ready to exit, bye bye...
+12446:C 05 Nov 2026 20:45:06.262 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+12446:C 05 Nov 2026 20:45:06.263 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=12446, just started
+12446:C 05 Nov 2026 20:45:06.263 # Configuration loaded
+12446:M 05 Nov 2026 20:45:06.263 * monotonic clock: POSIX clock_gettime
+12446:M 05 Nov 2026 20:45:06.264 * Running mode=standalone, port=6393.
+12446:M 05 Nov 2026 20:45:06.264 # Server initialized
+12446:M 05 Nov 2026 20:45:06.266 * Ready to accept connections
+12446:signal-handler (1793912366) Received SIGTERM scheduling shutdown...
+12446:M 05 Nov 2026 20:59:26.997 # User requested shutdown...
+12446:M 05 Nov 2026 20:59:26.997 # Redis is now ready to exit, bye bye...
+12571:C 05 Nov 2026 20:59:27.038 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+12571:C 05 Nov 2026 20:59:27.038 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=12571, just started
+12571:C 05 Nov 2026 20:59:27.038 # Configuration loaded
+12571:M 05 Nov 2026 20:59:27.039 * monotonic clock: POSIX clock_gettime
+12571:M 05 Nov 2026 20:59:27.040 * Running mode=standalone, port=6393.
+12571:M 05 Nov 2026 20:59:27.040 # Server initialized
+12571:M 05 Nov 2026 20:59:27.042 * Ready to accept connections
+12571:signal-handler (1793913362) Received SIGTERM scheduling shutdown...
+12571:M 05 Nov 2026 21:16:02.045 # User requested shutdown...
+12571:M 05 Nov 2026 21:16:02.045 # Redis is now ready to exit, bye bye...
+12934:C 05 Nov 2026 21:47:55.415 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+12934:C 05 Nov 2026 21:47:55.416 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=12934, just started
+12934:C 05 Nov 2026 21:47:55.416 # Configuration loaded
+12934:M 05 Nov 2026 21:47:55.416 * monotonic clock: POSIX clock_gettime
+12934:M 05 Nov 2026 21:47:55.417 * Running mode=standalone, port=6393.
+12934:M 05 Nov 2026 21:47:55.417 # Server initialized
+12934:M 05 Nov 2026 21:47:55.419 * Ready to accept connections
+12934:signal-handler (1793917205) Received SIGTERM scheduling shutdown...
+12934:M 05 Nov 2026 22:20:06.000 # User requested shutdown...
+12934:M 05 Nov 2026 22:20:06.002 # Redis is now ready to exit, bye bye...
+13059:C 05 Nov 2026 22:20:06.059 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+13059:C 05 Nov 2026 22:20:06.060 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=13059, just started
+13059:C 05 Nov 2026 22:20:06.060 # Configuration loaded
+13059:M 05 Nov 2026 22:20:06.060 * monotonic clock: POSIX clock_gettime
+13059:M 05 Nov 2026 22:20:06.061 * Running mode=standalone, port=6393.
+13059:M 05 Nov 2026 22:20:06.061 # Server initialized
+13059:M 05 Nov 2026 22:20:06.064 * Ready to accept connections
+13059:signal-handler (1793918244) Received SIGTERM scheduling shutdown...
+13059:M 05 Nov 2026 22:37:24.801 # User requested shutdown...
+13059:M 05 Nov 2026 22:37:24.801 # Redis is now ready to exit, bye bye...
+13422:C 05 Nov 2026 23:06:23.804 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+13422:C 05 Nov 2026 23:06:23.804 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=13422, just started
+13422:C 05 Nov 2026 23:06:23.804 # Configuration loaded
+13422:M 05 Nov 2026 23:06:23.804 * monotonic clock: POSIX clock_gettime
+13422:M 05 Nov 2026 23:06:23.805 * Running mode=standalone, port=6393.
+13422:M 05 Nov 2026 23:06:23.805 # Server initialized
+13422:M 05 Nov 2026 23:06:23.808 * Ready to accept connections
+13422:signal-handler (1793921926) Received SIGTERM scheduling shutdown...
+13422:M 05 Nov 2026 23:38:46.235 # User requested shutdown...
+13422:M 05 Nov 2026 23:38:46.235 # Redis is now ready to exit, bye bye...
+13547:C 05 Nov 2026 23:38:46.280 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+13547:C 05 Nov 2026 23:38:46.281 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=13547, just started
+13547:C 05 Nov 2026 23:38:46.281 # Configuration loaded
+13547:M 05 Nov 2026 23:38:46.281 * monotonic clock: POSIX clock_gettime
+13547:M 05 Nov 2026 23:38:46.282 * Running mode=standalone, port=6393.
+13547:M 05 Nov 2026 23:38:46.282 # Server initialized
+13547:M 05 Nov 2026 23:38:46.284 * Ready to accept connections
+13547:signal-handler (1793922568) Received SIGTERM scheduling shutdown...
+13547:M 05 Nov 2026 23:49:28.749 # User requested shutdown...
+13547:M 05 Nov 2026 23:49:28.750 # Redis is now ready to exit, bye bye...
+13912:C 06 Nov 2026 00:21:47.171 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+13912:C 06 Nov 2026 00:21:47.171 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=13912, just started
+13912:C 06 Nov 2026 00:21:47.171 # Configuration loaded
+13912:M 06 Nov 2026 00:21:47.171 * monotonic clock: POSIX clock_gettime
+13912:M 06 Nov 2026 00:21:47.172 * Running mode=standalone, port=6393.
+13912:M 06 Nov 2026 00:21:47.172 # Server initialized
+13912:M 06 Nov 2026 00:21:47.175 * Ready to accept connections
+13912:signal-handler (1793925482) Received SIGTERM scheduling shutdown...
+13912:M 06 Nov 2026 00:38:02.432 # User requested shutdown...
+13912:M 06 Nov 2026 00:38:02.432 # Redis is now ready to exit, bye bye...
+14037:C 06 Nov 2026 00:38:02.475 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+14037:C 06 Nov 2026 00:38:02.475 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=14037, just started
+14037:C 06 Nov 2026 00:38:02.475 # Configuration loaded
+14037:M 06 Nov 2026 00:38:02.476 * monotonic clock: POSIX clock_gettime
+14037:M 06 Nov 2026 00:38:02.476 * Running mode=standalone, port=6393.
+14037:M 06 Nov 2026 00:38:02.477 # Server initialized
+14037:M 06 Nov 2026 00:38:02.480 * Ready to accept connections
+14037:signal-handler (1793926269) Received SIGTERM scheduling shutdown...
+14037:M 06 Nov 2026 00:51:09.308 # User requested shutdown...
+14037:M 06 Nov 2026 00:51:09.308 # Redis is now ready to exit, bye bye...
+14402:C 06 Nov 2026 01:06:19.041 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+14402:C 06 Nov 2026 01:06:19.042 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=14402, just started
+14402:C 06 Nov 2026 01:06:19.042 # Configuration loaded
+14402:M 06 Nov 2026 01:06:19.043 * monotonic clock: POSIX clock_gettime
+14402:M 06 Nov 2026 01:06:19.044 * Running mode=standalone, port=6393.
+14402:M 06 Nov 2026 01:06:19.044 # Server initialized
+14402:M 06 Nov 2026 01:06:19.047 * Ready to accept connections
+14402:signal-handler (1793927696) Received SIGTERM scheduling shutdown...
+14402:M 06 Nov 2026 01:14:56.320 # User requested shutdown...
+14402:M 06 Nov 2026 01:14:56.320 # Redis is now ready to exit, bye bye...
+14527:C 06 Nov 2026 01:14:56.369 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+14527:C 06 Nov 2026 01:14:56.369 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=14527, just started
+14527:C 06 Nov 2026 01:14:56.369 # Configuration loaded
+14527:M 06 Nov 2026 01:14:56.370 * monotonic clock: POSIX clock_gettime
+14527:M 06 Nov 2026 01:14:56.374 * Running mode=standalone, port=6393.
+14527:M 06 Nov 2026 01:14:56.374 # Server initialized
+14527:M 06 Nov 2026 01:14:56.376 * Ready to accept connections
+14527:signal-handler (1793927780) Received SIGTERM scheduling shutdown...
+14527:M 06 Nov 2026 01:16:21.068 # User requested shutdown...
+14527:M 06 Nov 2026 01:16:21.068 # Redis is now ready to exit, bye bye...
+14892:C 06 Nov 2026 01:25:00.848 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+14892:C 06 Nov 2026 01:25:00.849 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=14892, just started
+14892:C 06 Nov 2026 01:25:00.850 # Configuration loaded
+14892:M 06 Nov 2026 01:25:00.850 * monotonic clock: POSIX clock_gettime
+14892:M 06 Nov 2026 01:25:00.852 * Running mode=standalone, port=6393.
+14892:M 06 Nov 2026 01:25:00.852 # Server initialized
+14892:M 06 Nov 2026 01:25:00.855 * Ready to accept connections
+14892:signal-handler (1793928376) Received SIGTERM scheduling shutdown...
+14892:M 06 Nov 2026 01:26:16.901 # User requested shutdown...
+14892:M 06 Nov 2026 01:26:16.901 # Redis is now ready to exit, bye bye...
+15017:C 06 Nov 2026 01:26:16.945 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+15017:C 06 Nov 2026 01:26:16.946 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=15017, just started
+15017:C 06 Nov 2026 01:26:16.946 # Configuration loaded
+15017:M 06 Nov 2026 01:26:16.946 * monotonic clock: POSIX clock_gettime
+15017:M 06 Nov 2026 01:26:16.947 * Running mode=standalone, port=6393.
+15017:M 06 Nov 2026 01:26:16.947 # Server initialized
+15017:M 06 Nov 2026 01:26:16.951 * Ready to accept connections
+15017:signal-handler (1793930392) Received SIGTERM scheduling shutdown...
+15017:M 06 Nov 2026 01:59:52.123 # User requested shutdown...
+15017:M 06 Nov 2026 01:59:52.123 # Redis is now ready to exit, bye bye...
+15382:C 06 Nov 2026 02:23:45.862 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+15382:C 06 Nov 2026 02:23:45.863 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=15382, just started
+15382:C 06 Nov 2026 02:23:45.863 # Configuration loaded
+15382:M 06 Nov 2026 02:23:45.863 * monotonic clock: POSIX clock_gettime
+15382:M 06 Nov 2026 02:23:45.864 * Running mode=standalone, port=6393.
+15382:M 06 Nov 2026 02:23:45.864 # Server initialized
+15382:M 06 Nov 2026 02:23:45.866 * Ready to accept connections
+15382:signal-handler (1793932335) Received SIGTERM scheduling shutdown...
+15382:M 06 Nov 2026 02:32:15.326 # User requested shutdown...
+15382:M 06 Nov 2026 02:32:15.327 # Redis is now ready to exit, bye bye...
+15507:C 06 Nov 2026 02:32:15.366 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+15507:C 06 Nov 2026 02:32:15.366 # Redis version=7.0.15, bits=64, commit=00000000, modified=0, pid=15507, just started
+15507:C 06 Nov 2026 02:32:15.366 # Configuration loaded
+15507:M 06 Nov 2026 02:32:15.367 * monotonic clock: POSIX clock_gettime
+15507:M 06 Nov 2026 02:32:15.370 * Running mode=standalone, port=6393.
+15507:M 06 Nov 2026 02:32:15.370 # Server initialized
+15507:M 06 Nov 2026 02:32:15.372 * Ready to accept connections
+15507:signal-handler (1793932398) Received SIGTERM scheduling shutdown...
+15507:M 06 Nov 2026 02:33:18.223 # User requested shutdown...
+15507:M 06 Nov 2026 02:33:18.223 # Redis is now ready to exit, bye bye...
