@@ -7,6 +7,9 @@
 #   ./scripts/dev.sh server [args...]   run tiny-redis-server (release)
 #   ./scripts/dev.sh cli   [args...]    redis-cli against it
 #   ./scripts/dev.sh bench [args...]    redis-benchmark against it
+#   ./scripts/dev.sh benchmark [trials] tiny-redis vs redis-server -> bench/results/<date>-docker
+#   ./scripts/dev.sh smoke [preset]     end-to-end smoke test  (default: release)
+#   ./scripts/dev.sh pmp   [preset] [samples] [depth]   gdb stack sampling under load
 #   ./scripts/dev.sh hw                 capture host/toolchain facts -> docs/hardware.txt
 #   ./scripts/dev.sh fmt [--fix]        clang-format, same check CI runs
 #   ./scripts/dev.sh tidy [preset]      clang-tidy over the compile database
@@ -89,6 +92,24 @@ cmd_server() {
   dex ./build/release/tiny-redis-server --bind 0.0.0.0 --port "$PORT" "$@"
 }
 
+cmd_benchmark() {
+  cmd_build release
+  dex scripts/bench.sh "bench/results/$(date +%F)-docker" "$@"
+}
+
+# Smoke and pmp default to release: they exercise the shipped binary, not the test build.
+cmd_smoke() {
+  local preset; preset="${1:-release}"
+  cmd_build "$preset"
+  dex tests/e2e/smoke.sh "build/$preset"
+}
+
+cmd_pmp() {
+  local preset; preset="${1:-release}"; shift || true
+  cmd_build "$preset"
+  dex scripts/pmp.sh "build/$preset" "$@"
+}
+
 cmd_hw() {
   up
   local out=docs/hardware.txt
@@ -163,6 +184,9 @@ case "${1:-}" in
   server)  shift; cmd_server "$@" ;;
   cli)     shift; up; dex redis-cli -p "$PORT" "$@" ;;
   bench)   shift; up; dex redis-benchmark -p "$PORT" "$@" ;;
+  benchmark) shift; cmd_benchmark "$@" ;;
+  smoke)   shift; cmd_smoke "$@" ;;
+  pmp)     shift; cmd_pmp "$@" ;;
   hw)      shift; cmd_hw ;;
   fmt)     shift; cmd_fmt "$@" ;;
   tidy)    shift; cmd_tidy "$@" ;;
