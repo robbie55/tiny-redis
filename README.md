@@ -5,25 +5,29 @@ protocol, so `redis-cli` and `redis-benchmark` work against it unmodified. epoll
 loop, RESP parser, TTL expiry, and a hash table whose entries come from a custom pool
 allocator.
 
-> **Status:** in development. No benchmark has run yet, so the table below is empty.
+> **Status:** in development. The numbers below come from one run on a laptop VM. Read the
+> caveats in [`docs/benchmark.md`](docs/benchmark.md) before quoting them.
 
 ## Benchmark
 
-<!-- TODO(robbie): fill in from a real run.
-     - Every number comes from a committed results file.
-     - Median of N trials after warmup, never a single run.
-     - p50 and p99, never an average.
-     - State hardware, compiler, flags and core pinning below the table.
-     - Add a redis-server column only if it ran on the same box with the same flags. -->
+Same box, same client, same flags, and each server pinned to the same vCPU. The baseline
+is `redis-server` 7.0.15 with persistence off and one I/O thread. Values are 256 bytes,
+with 50 clients and 100k keys. Each number is the median of 5 alternating trials, and the
+server was at 97–100% CPU in every run.
 
-| Workload | tiny-redis | p50 | p99 |
+| Workload | tiny-redis ops/s | redis ops/s | ratio |
 |---|---|---|---|
-| SET, no pipelining | — | — | — |
-| GET, no pipelining | — | — | — |
-| SET, pipelined (`-P 16`) | — | — | — |
-| GET, pipelined (`-P 16`) | — | — | — |
+| SET, no pipelining | 199,960 | 179,040 | 1.12× |
+| GET, no pipelining | 196,605 | 181,763 | 1.08× (ranges overlap) |
+| SET, pipelined (`-P 16`) | 1,090,314 | 737,735 | 1.48× |
+| GET, pipelined (`-P 16`) | 1,142,096 | 812,513 | 1.41× |
 
-Hardware / toolchain: _TBD_
+Hardware: Apple M1 Pro, Docker Desktop Linux VM (aarch64), gcc 13.3 `-O3`. Source:
+[`bench/results/2026-11-06-1524-docker/`](bench/results/2026-11-06-1524-docker/). The
+ratio varies by day: an earlier run gave 1.29–1.36× pipelined. Latencies, method and
+caveats are in [`docs/benchmark.md`](docs/benchmark.md). tiny-redis does much less per
+command than Redis. Treat the ratio as a measure of this server's speed, not as a claim
+that it replaces Redis.
 
 ## Architecture
 
@@ -48,7 +52,7 @@ _TBD._
 ## Commands
 
 `GET` · `SET key value [EX s | PX ms | KEEPTTL]` · `DEL` · `EXISTS` · `EXPIRE` · `TTL` ·
-`PING`
+`PING` · `ECHO` · `DBSIZE` · `FLUSHALL` · `QUIT`
 
 Both wire forms are accepted: RESP arrays of bulk strings (what every real client sends)
 and inline commands (`PING\r\n` typed at a socket). Keys and values are binary-safe.

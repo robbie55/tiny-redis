@@ -32,8 +32,12 @@ namespace {
 
 int main(int argc, char** argv) {
   const std::string_view mode = argc > 1 ? argv[1] : "";
-  if (mode == "evict") return runEvict();
-  if (mode == "expire") return runExpire();
+  if (mode == "evict") {
+    return runEvict();
+  }
+  if (mode == "expire") {
+    return runExpire();
+  }
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
   std::fprintf(stderr, "usage: tinyredis_store_bench evict|expire\n");
   return 2;

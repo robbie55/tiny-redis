@@ -53,6 +53,9 @@ startup.
 | `server [args...]` | build `release`, run `tiny-redis-server`. Extra args pass through. |
 | `cli [args...]` | `redis-cli` against the running server, inside the container. |
 | `bench [args...]` | `redis-benchmark` against it, inside the container. |
+| `benchmark [trials]` | build `release`, then benchmark it against `redis-server`. Writes a new `bench/results/<date-time>-docker/` and refuses to overwrite an existing one. Keeps a Mac awake for the run. Method in [`benchmark.md`](benchmark.md). |
+| `smoke [preset]` | build, then run the end-to-end smoke test. Default preset `release`. |
+| `pmp [preset] [samples] [depth]` | build, then sample the server's stacks with gdb under load. Default `release`, 20 samples, 8 frames. |
 | `hw` | capture CPU / kernel / toolchain facts to `docs/hardware.txt`. |
 | `fmt [--fix]` | `clang-format`. The bare form is the same check CI runs. |
 | `tidy [preset]` | `clang-tidy` over the compile database. |
@@ -79,7 +82,50 @@ Presets everywhere: `debug`, `release`, `asan`, `tsan`.
 ./scripts/dev.sh bench -t set,get -n 100000 -P 16
 ```
 
+## End-to-end smoke test
+
+`tests/e2e/smoke.sh` starts the server and goes at it in three rounds. First every command
+through `redis-cli`, plus expiry, a binary value, two error replies and an inline `PING`.
+Then `redis-benchmark` SET and GET, unpipelined, at `-P 16`, and with 50 clients. Last,
+clients that misbehave: they hang up with thousands of replies unread, get killed
+mid-benchmark, or send half a command and leave.
+
+After each round the server has to answer `PING`. At the end it has to exit 0 on SIGTERM
+without a sanitizer report. The exit status is the number of failed checks.
+
+```sh
+./scripts/dev.sh smoke          # release
+./scripts/dev.sh smoke asan
+```
+
+I wrote the expected replies by hand from Redis's docs, so a pass means the server agrees
+with me, not with `redis-server`. The throughput lines come from one unpinned run. Don't
+quote them.
+
+## Stack sampling
+
+`scripts/pmp.sh` is a poor man's profiler. It puts the server under `redis-benchmark`
+load, stops it with gdb a set number of times, and counts identical stacks. It only needs
+gdb. No `perf`, no extra container capabilities.
+
+```sh
+./scripts/dev.sh pmp                 # release, 20 samples, 8 frames deep
+./scripts/dev.sh pmp asan 50 12
+PMP_LOAD="-t get -c 1 -P 1" ./scripts/dev.sh pmp
+```
+
+Each sample freezes the process for tens of milliseconds. It shows where the time goes,
+not how much of it. Use `perf` for the numbers.
+
 ## Things that will bite you
+
+**Never time an asan build.** The ASan runtime in this image turns on
+stack-use-after-return detection by default. Every function call then allocates a fake
+stack frame, and under load the server runs about 30× slower than `release`. Pipelining
+doesn't help, because the cost is per call, not per syscall.
+`ASAN_OPTIONS=detect_stack_use_after_return=0` gets most of the speed back. Keep the
+detection on for tests, where it catches real bugs, and take every timing from `release`.
+
 
 **`build/` is a named Docker volume, not part of the bind mount.** Otherwise the macOS and
 Linux `CMakeCache`s collide over `build/<preset>`, and object files on VirtioFS compile

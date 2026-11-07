@@ -57,7 +57,7 @@ jobs:
   # building and passing on a platform that has no epoll at all.
   macos-core:
     name: macos / portable core
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - run: brew install ninja
