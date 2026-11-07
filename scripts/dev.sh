@@ -7,7 +7,7 @@
 #   ./scripts/dev.sh server [args...]   run tiny-redis-server (release)
 #   ./scripts/dev.sh cli   [args...]    redis-cli against it
 #   ./scripts/dev.sh bench [args...]    redis-benchmark against it
-#   ./scripts/dev.sh benchmark [trials] tiny-redis vs redis-server -> bench/results/<date>-docker
+#   ./scripts/dev.sh benchmark [trials] tiny-redis vs redis-server -> bench/results/<date-time>-docker
 #   ./scripts/dev.sh smoke [preset]     end-to-end smoke test  (default: release)
 #   ./scripts/dev.sh pmp   [preset] [samples] [depth]   gdb stack sampling under load
 #   ./scripts/dev.sh hw                 capture host/toolchain facts -> docs/hardware.txt
@@ -94,7 +94,10 @@ cmd_server() {
 
 cmd_benchmark() {
   cmd_build release
-  dex scripts/bench.sh "bench/results/$(date +%F)-docker" "$@"
+  # caffeinate: macOS sleeping or throttling mid-run wrecked an earlier run's later trials.
+  local runner=()
+  command -v caffeinate >/dev/null && runner=(caffeinate -i)
+  ${runner[@]+"${runner[@]}"} docker exec -w /work "$CONTAINER" scripts/bench.sh "bench/results/$(date +%F-%H%M)-docker" "$@"
 }
 
 # Smoke and pmp default to release: they exercise the shipped binary, not the test build.

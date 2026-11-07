@@ -53,7 +53,7 @@ startup.
 | `server [args...]` | build `release`, run `tiny-redis-server`. Extra args pass through. |
 | `cli [args...]` | `redis-cli` against the running server, inside the container. |
 | `bench [args...]` | `redis-benchmark` against it, inside the container. |
-| `benchmark [trials]` | build `release`, then benchmark it against `redis-server`. Writes `bench/results/<date>-docker/`. Method in [`benchmark.md`](benchmark.md). |
+| `benchmark [trials]` | build `release`, then benchmark it against `redis-server`. Writes a new `bench/results/<date-time>-docker/` and refuses to overwrite an existing one. Keeps a Mac awake for the run. Method in [`benchmark.md`](benchmark.md). |
 | `smoke [preset]` | build, then run the end-to-end smoke test. Default preset `release`. |
 | `pmp [preset] [samples] [depth]` | build, then sample the server's stacks with gdb under load. Default `release`, 20 samples, 8 frames. |
 | `hw` | capture CPU / kernel / toolchain facts to `docs/hardware.txt`. |

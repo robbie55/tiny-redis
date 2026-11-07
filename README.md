@@ -13,20 +13,21 @@ allocator.
 Same box, same client, same flags, and each server pinned to the same vCPU. The baseline
 is `redis-server` 7.0.15 with persistence off and one I/O thread. Values are 256 bytes,
 with 50 clients and 100k keys. Each number is the median of 5 alternating trials, and the
-server was at 98–100% CPU in every run.
+server was at 97–100% CPU in every run.
 
 | Workload | tiny-redis ops/s | redis ops/s | ratio |
 |---|---|---|---|
-| SET, no pipelining | 210,467 | 196,618 | 1.07× (within noise) |
-| GET, no pipelining | 206,840 | 199,920 | 1.03× (within noise) |
-| SET, pipelined (`-P 16`) | 1,090,314 | 799,254 | 1.36× |
-| GET, pipelined (`-P 16`) | 1,169,819 | 904,500 | 1.29× |
+| SET, no pipelining | 199,960 | 179,040 | 1.12× |
+| GET, no pipelining | 196,605 | 181,763 | 1.08× (ranges overlap) |
+| SET, pipelined (`-P 16`) | 1,090,314 | 737,735 | 1.48× |
+| GET, pipelined (`-P 16`) | 1,142,096 | 812,513 | 1.41× |
 
 Hardware: Apple M1 Pro, Docker Desktop Linux VM (aarch64), gcc 13.3 `-O3`. Source:
-[`bench/results/2026-11-05-docker/`](bench/results/2026-11-05-docker/). Latencies, method
-and caveats are in [`docs/benchmark.md`](docs/benchmark.md). tiny-redis does much less
-per command than Redis. Treat the ratio as a measure of this server's speed, not as a
-claim that it replaces Redis.
+[`bench/results/2026-11-06-1524-docker/`](bench/results/2026-11-06-1524-docker/). The
+ratio varies by day: an earlier run gave 1.29–1.36× pipelined. Latencies, method and
+caveats are in [`docs/benchmark.md`](docs/benchmark.md). tiny-redis does much less per
+command than Redis. Treat the ratio as a measure of this server's speed, not as a claim
+that it replaces Redis.
 
 ## Architecture
 

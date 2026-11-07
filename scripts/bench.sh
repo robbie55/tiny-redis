@@ -22,6 +22,8 @@ VALUE=256
 CLIENTS=50
 
 [ -x "$BIN" ] || { echo "no release build at $BIN" >&2; exit 1; }
+# Docs cite result directories by path, so a run must never overwrite one.
+[ -e "$OUT" ] && { echo "$OUT already exists; pick a new directory" >&2; exit 1; }
 mkdir -p "$OUT/raw"
 
 # Persistence off and one I/O thread for Redis: single-threaded vs single-threaded, nothing

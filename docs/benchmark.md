@@ -24,13 +24,13 @@ to the same vCPU. [`scripts/bench.sh`](../scripts/bench.sh) is the whole procedu
   `--threads 4`. These are Docker Desktop vCPUs, which macOS schedules across the M1's
   performance and efficiency cores as it likes. They are not dedicated physical cores.
 - **Who's the bottleneck.** The script records CPU use for the server and the client on
-  every run. Server CPU is 98–100% on every run. Client CPU peaks at about 210% of the 400%
-  it has. So the server was the limit, not the client. An earlier attempt with 2 client
+  every run. Server CPU is 97–100% on every run. Client CPU peaks at 205% of the 400% it
+  has. So the server was the limit, not the client. An earlier attempt with 2 client
   threads ran the client out of CPU on the unpipelined rows, and I threw it away.
 - **Client.** `redis-benchmark` 7.0.15, 50 connections, 256-byte values, random keys out
   of 100,000.
 - **Trials.** 5. Each trial starts both servers fresh and preloads each one with 1M SETs.
-  The script checks `DBSIZE` afterwards: every preload left 99,992 keys or more, so GETs
+  The script checks `DBSIZE` afterwards: every preload left 99,993 keys or more, so GETs
   hit. The two servers alternate which one runs first, so drift on the laptop (heat,
   background load) doesn't favour either.
 - **Run length.** 3M requests unpipelined and 12M pipelined, which is about 10–16 s per
@@ -41,25 +41,25 @@ to the same vCPU. [`scripts/bench.sh`](../scripts/bench.sh) is the whole procedu
 
 ## Results
 
-Source: [`bench/results/2026-11-05-docker/summary.csv`](../bench/results/2026-11-05-docker/summary.csv).
+Source: [`bench/results/2026-11-06-1524-docker/summary.csv`](../bench/results/2026-11-06-1524-docker/summary.csv).
 Medians of 5 trials, with the min–max range across trials.
 
 | command | pipeline | tiny-redis ops/s | redis ops/s | ratio | tiny-redis p50 / p99 (ms) | redis p50 / p99 (ms) |
 | ------- | -------- | ---------------- | ----------- | ----- | ------------------------- | -------------------- |
-| SET | 1  | 210,467 (199,760–214,179)     | 196,618 (187,441–202,689) | 1.07× | 0.191 / 0.559 | 0.223 / 0.455 |
-| GET | 1  | 206,840 (203,293–214,225)     | 199,920 (196,631–206,768) | 1.03× | 0.199 / 0.567 | 0.215 / 0.439 |
-| SET | 16 | 1,090,314 (1,065,625–1,170,161) | 799,254 (761,083–812,733) | 1.36× | 0.671 / 1.463 | 0.895 / 1.727 |
-| GET | 16 | 1,169,819 (1,169,591–1,198,562) | 904,500 (826,674–922,013) | 1.29× | 0.615 / 1.359 | 0.791 / 1.383 |
+| SET | 1  | 199,960 (193,474–206,854)       | 179,040 (165,966–181,763) | 1.12× | 0.199 / 0.583 | 0.247 / 0.487 |
+| GET | 1  | 196,605 (181,763–199,960)       | 181,763 (179,008–190,307) | 1.08× | 0.207 / 0.591 | 0.247 / 0.511 |
+| SET | 16 | 1,090,314 (1,065,814–1,228,376) | 737,735 (682,982–749,017) | 1.48× | 0.671 / 1.455 | 0.983 / 1.775 |
+| GET | 16 | 1,142,096 (1,115,553–1,169,705) | 812,513 (798,722–841,161) | 1.41× | 0.631 / 1.383 | 0.887 / 1.559 |
 
 ## Headline number
 
-**About 1.17M GET/s at pipeline depth 16, 1.29× Redis 7.0 on the same vCPU** (1.36× for
+**About 1.14M GET/s at pipeline depth 16, 1.41× Redis 7.0 on the same vCPU** (1.48× for
 SET). For both commands, tiny-redis's slowest pipelined trial beat Redis's fastest.
 
-Unpipelined, the two are at parity. tiny-redis's median is 3–7% higher, but the trial
-ranges overlap, so I don't claim a lead there. My guess is that with one request per round
-trip, the read and write syscalls cost the same for both servers and swamp everything else.
-I haven't profiled it to check.
+Unpipelined, tiny-redis is a little ahead: 1.12× for SET, where the trial ranges don't
+overlap, and 1.08× for GET, where they do. My guess is that with one request per round
+trip, the read and write syscalls cost the same for both servers and swamp everything
+else. I haven't profiled it to check.
 
 ## Caveats
 
@@ -71,10 +71,12 @@ I haven't profiled it to check.
   persistence, and no client-side caching. Redis does bookkeeping for those features on
   every request. This shows that the server is fast for what it does. It doesn't show that
   it does what Redis does.
-- **Unpipelined p99 is worse than Redis's** (about 0.56 ms against 0.45 ms), even though
+- **Unpipelined p99 is worse than Redis's** (about 0.58 ms against 0.49 ms), even though
   the median is better. I haven't looked into why yet.
 - **Pipelined latency is per batch.** With `-P 16`, `redis-benchmark` gives every request
   in a batch the latency of the whole batch. Compare these latencies with each other, not
   with other tools' numbers.
-- **One session.** Five alternating trials guard against noise within a run, not against
-  the laptop being in a different state on another day.
+- **The ratio moves between days.** Five alternating trials guard against noise within a
+  run, not between runs. A run the day before, with the same method, gave 1.29× (GET) and
+  1.36× (SET) pipelined. A later run overwrote its files, so it isn't committed and isn't
+  quoted here. Read the pipelined lead as roughly 1.3–1.5×, not as exactly 1.41×.
